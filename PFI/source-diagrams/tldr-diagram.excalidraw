@@ -1,0 +1,367 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "mcp-excalidraw-server",
+  "elements": [
+    {
+      "id": "proposer",
+      "type": "rectangle",
+      "x": 80,
+      "y": 230,
+      "width": 220,
+      "height": 90,
+      "backgroundColor": "#f1f3f5",
+      "strokeColor": "#495057",
+      "strokeWidth": 2,
+      "label": {
+        "text": "Block Proposer"
+      },
+      "fontSize": 18,
+      "fontFamily": 2,
+      "createdAt": "2026-05-13T00:10:00.568Z",
+      "updatedAt": "2026-05-13T00:10:00.568Z",
+      "version": 1
+    },
+    {
+      "id": "validators",
+      "type": "rectangle",
+      "x": 430,
+      "y": 90,
+      "width": 260,
+      "height": 90,
+      "backgroundColor": "#f1f3f5",
+      "strokeColor": "#495057",
+      "strokeWidth": 2,
+      "label": {
+        "text": "Validators\n(re-execute payload)"
+      },
+      "fontSize": 18,
+      "fontFamily": 2,
+      "createdAt": "2026-05-13T00:10:00.568Z",
+      "updatedAt": "2026-05-13T00:10:00.568Z",
+      "version": 1
+    },
+    {
+      "id": "prover",
+      "type": "rectangle",
+      "x": 430,
+      "y": 370,
+      "width": 260,
+      "height": 90,
+      "backgroundColor": "#d0ebff",
+      "strokeColor": "#1c7ed6",
+      "strokeWidth": 2,
+      "label": {
+        "text": "Proof-generating node"
+      },
+      "fontSize": 18,
+      "fontFamily": 2,
+      "createdAt": "2026-05-13T00:10:00.569Z",
+      "updatedAt": "2026-05-13T00:10:00.569Z",
+      "version": 1
+    },
+    {
+      "id": "topic",
+      "type": "ellipse",
+      "x": 800,
+      "y": 370,
+      "width": 280,
+      "height": 90,
+      "backgroundColor": "#fff3bf",
+      "strokeColor": "#f59f00",
+      "strokeWidth": 2,
+      "label": {
+        "text": "execution_proof\ngossipsub topic"
+      },
+      "fontSize": 17,
+      "fontFamily": 2,
+      "createdAt": "2026-05-13T00:10:00.569Z",
+      "updatedAt": "2026-05-13T00:10:00.569Z",
+      "version": 1
+    },
+    {
+      "id": "verifier",
+      "type": "rectangle",
+      "x": 1180,
+      "y": 370,
+      "width": 280,
+      "height": 90,
+      "backgroundColor": "#d0ebff",
+      "strokeColor": "#1c7ed6",
+      "strokeWidth": 2,
+      "label": {
+        "text": "Proof-verifying node\n(stateless check)"
+      },
+      "fontSize": 18,
+      "fontFamily": 2,
+      "createdAt": "2026-05-13T00:10:00.569Z",
+      "updatedAt": "2026-05-13T00:10:00.569Z",
+      "version": 1
+    },
+    {
+      "id": "mp3az3dvwplm2f48pol",
+      "type": "arrow",
+      "x": 307.48229005965027,
+      "y": 230.54724159905126,
+      "strokeColor": "#868e96",
+      "strokeWidth": 2,
+      "label": {
+        "text": "block gossip"
+      },
+      "fontSize": 14,
+      "fontFamily": 2,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          126.10684845212802,
+          -47.71610481972414
+        ]
+      ],
+      "start": {
+        "id": "proposer"
+      },
+      "end": {
+        "id": "validators"
+      },
+      "createdAt": "2026-05-13T00:10:00.569Z",
+      "updatedAt": "2026-05-13T00:10:00.569Z",
+      "version": 1
+    },
+    {
+      "id": "mp3az3dvk7h9ydn1pcm",
+      "type": "arrow",
+      "x": 307.48229005965027,
+      "y": 319.45275840094877,
+      "strokeColor": "#868e96",
+      "strokeWidth": 2,
+      "label": {
+        "text": "block gossip"
+      },
+      "fontSize": 14,
+      "fontFamily": 2,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          126.10684845212802,
+          47.71610481972408
+        ]
+      ],
+      "start": {
+        "id": "proposer"
+      },
+      "end": {
+        "id": "prover"
+      },
+      "createdAt": "2026-05-13T00:10:00.569Z",
+      "updatedAt": "2026-05-13T00:10:00.569Z",
+      "version": 1
+    },
+    {
+      "id": "subtitle1",
+      "type": "text",
+      "x": 80,
+      "y": 700,
+      "width": 800,
+      "height": 24,
+      "strokeColor": "#495057",
+      "text": "Stateless, sublinear verification — no EL state, no consensus rule changes, fully opt-in.",
+      "fontSize": 16,
+      "fontFamily": 2,
+      "createdAt": "2026-05-13T00:10:00.570Z",
+      "updatedAt": "2026-05-13T00:23:37.326Z",
+      "version": 2
+    },
+    {
+      "id": "mp3b0b5vzqe8zojrxw",
+      "type": "arrow",
+      "x": 698,
+      "y": 415,
+      "strokeColor": "#1c7ed6",
+      "strokeWidth": 2.5,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          94,
+          0
+        ]
+      ],
+      "start": {
+        "id": "prover"
+      },
+      "end": {
+        "id": "topic"
+      },
+      "createdAt": "2026-05-13T00:10:57.288Z",
+      "updatedAt": "2026-05-13T00:10:57.288Z",
+      "version": 1
+    },
+    {
+      "id": "mp3b0b5vavazb0v40pg",
+      "type": "arrow",
+      "x": 1088,
+      "y": 415,
+      "strokeColor": "#1c7ed6",
+      "strokeWidth": 2.5,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          84,
+          0
+        ]
+      ],
+      "start": {
+        "id": "topic"
+      },
+      "end": {
+        "id": "verifier"
+      },
+      "createdAt": "2026-05-13T00:10:57.288Z",
+      "updatedAt": "2026-05-13T00:10:57.288Z",
+      "version": 1
+    },
+    {
+      "id": "prover-pnode",
+      "type": "rectangle",
+      "x": 430,
+      "y": 560,
+      "width": 260,
+      "height": 70,
+      "backgroundColor": "#e7f5ff",
+      "strokeColor": "#1971c2",
+      "strokeWidth": 2,
+      "strokeStyle": "dashed",
+      "label": {
+        "text": "Proof node"
+      },
+      "fontSize": 17,
+      "fontFamily": 2,
+      "createdAt": "2026-05-13T00:23:46.360Z",
+      "updatedAt": "2026-05-13T00:23:46.360Z",
+      "version": 1
+    },
+    {
+      "id": "verifier-pnode",
+      "type": "rectangle",
+      "x": 1180,
+      "y": 560,
+      "width": 280,
+      "height": 70,
+      "backgroundColor": "#e7f5ff",
+      "strokeColor": "#1971c2",
+      "strokeWidth": 2,
+      "strokeStyle": "dashed",
+      "label": {
+        "text": "Proof node"
+      },
+      "fontSize": 17,
+      "fontFamily": 2,
+      "createdAt": "2026-05-13T00:23:46.360Z",
+      "updatedAt": "2026-05-13T00:23:46.360Z",
+      "version": 1
+    },
+    {
+      "id": "mp3bmwx30jdqfueadhxs",
+      "type": "arrow",
+      "x": 560,
+      "y": 468,
+      "strokeColor": "#1971c2",
+      "strokeWidth": 2,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          84
+        ]
+      ],
+      "start": {
+        "id": "prover"
+      },
+      "end": {
+        "id": "prover-pnode"
+      },
+      "startArrowhead": "arrow",
+      "endArrowhead": "arrow",
+      "createdAt": "2026-05-13T00:28:31.913Z",
+      "updatedAt": "2026-05-13T00:28:31.913Z",
+      "version": 1
+    },
+    {
+      "id": "mp3bmwx3tuav9jhfcgs",
+      "type": "arrow",
+      "x": 1320,
+      "y": 468,
+      "strokeColor": "#1971c2",
+      "strokeWidth": 2,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          84
+        ]
+      ],
+      "start": {
+        "id": "verifier"
+      },
+      "end": {
+        "id": "verifier-pnode"
+      },
+      "startArrowhead": "arrow",
+      "endArrowhead": "arrow",
+      "createdAt": "2026-05-13T00:28:31.913Z",
+      "updatedAt": "2026-05-13T00:28:31.913Z",
+      "version": 1
+    },
+    {
+      "id": "label-request",
+      "type": "text",
+      "x": 600,
+      "y": 495,
+      "width": 340,
+      "height": 22,
+      "strokeColor": "#1971c2",
+      "text": "proof_engine.request_proofs(...)",
+      "fontSize": 14,
+      "fontFamily": 3,
+      "createdAt": "2026-05-13T00:28:31.913Z",
+      "updatedAt": "2026-05-13T00:28:31.913Z",
+      "version": 1
+    },
+    {
+      "id": "label-verify",
+      "type": "text",
+      "x": 1350,
+      "y": 495,
+      "width": 420,
+      "height": 22,
+      "strokeColor": "#1971c2",
+      "text": "proof_engine.verify_execution_proof(...)",
+      "fontSize": 14,
+      "fontFamily": 3,
+      "createdAt": "2026-05-13T00:28:31.913Z",
+      "updatedAt": "2026-05-13T00:28:31.913Z",
+      "version": 1
+    }
+  ],
+  "appState": {
+    "viewBackgroundColor": "#ffffff",
+    "gridSize": null
+  }
+}

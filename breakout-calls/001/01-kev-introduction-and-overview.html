@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L1-zkEVM breakout #1</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-deep: #161926;
+    --bg-slide: #1e2235;
+    --bg-card: #262b42;
+    --border: #2e3450;
+    --border-light: #3a4060;
+    --text: #e0e4f0;
+    --text-muted: #6a72a0;
+    --text-dim: #4a5280;
+    --blue: #4a90d9;
+    --blue-light: #5a9ee0;
+    --green: #4caf6e;
+    --green-light: #5cc47e;
+    --orange: #e8a838;
+    --purple: #b07cd8;
+    --purple-light: #c090e8;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  html, body { height: 100%; overflow: hidden; background: var(--bg-deep); color: var(--text); font-family: var(--sans); }
+
+  /* ===== FRAMEWORK ===== */
+  .deck { width: 100%; height: 100%; position: relative; }
+  .slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.45s ease, transform 0.45s ease; transform: translateX(40px); padding: 24px; }
+  .slide.active { opacity: 1; pointer-events: all; transform: translateX(0); z-index: 2; }
+  .slide.exit-left { opacity: 0; transform: translateX(-40px); }
+  .slide-inner { width: 100%; max-width: 1260px; background: var(--bg-slide); border-radius: 18px; padding: 44px 52px 36px; box-shadow: 0 16px 60px rgba(0,0,0,0.45); position: relative; overflow: hidden; }
+  .slide-inner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+
+  /* ===== SHARED ===== */
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+  .htitle { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+  .badge { font-family: var(--mono); font-size: 12px; font-weight: 500; padding: 5px 16px; border-radius: 20px; }
+
+  .actor { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-bottom: 14px; }
+  .actor .icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
+  .actor .name { font-weight: 700; font-size: 15px; }
+  .actor .role { font-size: 10px; font-family: var(--mono); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .icon-blue { background: var(--blue); color: #fff; }
+  .icon-green { background: var(--green); color: #fff; }
+  .icon-orange { background: var(--orange); color: var(--bg-deep); }
+  .icon-purple { background: var(--purple); color: #fff; }
+
+  .box { border: 1.5px dashed var(--border-light); border-radius: 12px; padding: 14px 14px 18px; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .infra { background: var(--bg-card); color: var(--text-muted); font-size: 12px; padding: 6px 14px; border-radius: 6px; width: 100%; text-align: center; font-family: var(--mono); }
+  .infra + .infra { margin-top: 4px; }
+  .lbl { font-size: 11px; color: var(--text-dim); font-family: var(--mono); margin-top: 14px; margin-bottom: 5px; }
+  .c { padding: 10px 14px; border-radius: 7px; font-weight: 600; font-size: 12.5px; text-align: center; width: 100%; }
+  .c + .c { margin-top: 4px; }
+  .c-blue { background: var(--blue); color: #fff; }
+  .c-green { background: var(--green); color: #fff; }
+  .c-orange { background: var(--orange); color: var(--bg-deep); }
+  .c-purple { background: var(--purple); color: #fff; }
+
+  .columns { display: flex; align-items: flex-start; gap: 0; justify-content: center; }
+  .column { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; }
+  .column.narrow { flex: 0.65; }
+  .column.wide { flex: 1.3; }
+
+  .arrow-col { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 32px; flex-shrink: 0; }
+  .arrow-right { width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 11px solid var(--border-light); }
+  .arrow-right.blue { border-left-color: var(--blue-light); }
+  .arrow-right.green { border-left-color: var(--green-light); }
+  .arrow-right.orange { border-left-color: var(--orange); }
+  .arrow-right.purple { border-left-color: var(--purple-light); }
+
+  .summary-text { margin-top: 24px; background: var(--bg-deep); border-radius: 10px; padding: 14px 24px; text-align: center; font-size: 13px; color: var(--text-muted); }
+
+  /* Submit row */
+  .submit-row { display: flex; align-items: center; justify-content: center; gap: 0; margin-top: 20px; }
+  .submit-cell { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .submit-arrow { width: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  /* ===== PHASE COLORS ===== */
+  .slide[data-phase="title"] .slide-inner::before,
+  .slide[data-phase="logistics"] .slide-inner::before { background: linear-gradient(90deg, var(--blue), var(--orange), var(--purple)); }
+  .slide[data-phase="1-nozk"] .slide-inner::before { background: linear-gradient(90deg, var(--blue), var(--green), var(--purple)); }
+  .slide[data-phase="1-nozk"] .badge { background: var(--purple); color: #fff; }
+  .slide[data-phase="2-nozk"] .slide-inner::before { background: linear-gradient(90deg, var(--blue), var(--purple)); }
+  .slide[data-phase="2-nozk"] .badge { background: var(--purple); color: #fff; }
+  .slide[data-phase="1-zk"] .slide-inner::before { background: linear-gradient(90deg, var(--blue), var(--green), var(--purple)); }
+  .slide[data-phase="2-zk"] .slide-inner::before { background: linear-gradient(90deg, var(--blue), var(--orange), var(--blue), var(--purple)); }
+
+  /* Arrow alignment */
+  .arrow-col.p1-a { padding-top: 240px; }
+  .arrow-col.p1-b { padding-top: 240px; }
+  .arrow-col.p1z-a { padding-top: 220px; }
+  .arrow-col.p1z-b { padding-top: 220px; }
+  .arrow-col.p2-a { padding-top: 160px; }
+  .arrow-col.p2z-a { padding-top: 150px; }
+  .arrow-col.p2z-b { padding-top: 190px; }
+  .arrow-col.p2z-c { padding-top: 160px; }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .slide.active .column { animation: fadeInUp 0.4s ease both; }
+  .slide.active .column:nth-child(1) { animation-delay: 0.05s; }
+  .slide.active .column:nth-child(2) { animation-delay: 0.12s; }
+  .slide.active .column:nth-child(3) { animation-delay: 0.19s; }
+  .slide.active .column:nth-child(4) { animation-delay: 0.26s; }
+  .slide.active .column:nth-child(5) { animation-delay: 0.33s; }
+  .slide.active .arrow-col { animation: fadeInUp 0.3s ease both; }
+  .slide.active .arrow-col:nth-child(2) { animation-delay: 0.08s; }
+  .slide.active .arrow-col:nth-child(4) { animation-delay: 0.16s; }
+  .slide.active .arrow-col:nth-child(6) { animation-delay: 0.24s; }
+  .slide.active .arrow-col:nth-child(8) { animation-delay: 0.32s; }
+  .slide.active .summary-text { animation: fadeInUp 0.4s ease 0.35s both; }
+  .slide.active .submit-row { animation: fadeInUp 0.4s ease 0.3s both; }
+
+  /* Title */
+  .title-slide { display: flex; align-items: center; justify-content: center; min-height: 480px; padding: 60px 52px; }
+  .title-content { text-align: center; }
+  .title-hero { font-size: 72px; font-weight: 700; letter-spacing: -2px; line-height: 1.1; color: var(--text); }
+  .title-sub { font-size: 20px; font-weight: 400; letter-spacing: 0; color: var(--text-dim); margin-top: 16px; }
+  .slide.active .title-hero { animation: fadeInUp 0.6s ease 0.1s both; }
+  .slide.active .title-sub { animation: fadeIn 0.5s ease 0.3s both; }
+
+  /* Logistics */
+  .logistics-slide { min-height: 480px; padding: 56px 64px; display: flex; flex-direction: column; }
+  .logistics-title { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 48px; }
+  .logistics-grid { display: flex; flex-direction: column; gap: 28px; max-width: 700px; }
+  .logistics-item { display: flex; align-items: flex-start; gap: 20px; }
+  .logistics-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logistics-icon.li-cal { background: rgba(74,144,217,0.12); border: 1px solid rgba(74,144,217,0.2); }
+  .logistics-icon.li-time { background: rgba(232,168,56,0.12); border: 1px solid rgba(232,168,56,0.2); }
+  .logistics-icon.li-chat { background: rgba(176,124,216,0.12); border: 1px solid rgba(176,124,216,0.2); }
+  .logistics-text { display: flex; flex-direction: column; gap: 3px; padding-top: 4px; }
+  .logistics-label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+  .logistics-value { font-size: 20px; font-weight: 600; line-height: 1.3; }
+  .logistics-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .slide.active .logistics-title { animation: fadeInUp 0.45s ease 0.05s both; }
+  .slide.active .logistics-item { animation: fadeInUp 0.45s ease both; }
+  .slide.active .logistics-item:nth-child(1) { animation-delay: 0.1s; }
+  .slide.active .logistics-item:nth-child(2) { animation-delay: 0.2s; }
+  .slide.active .logistics-item:nth-child(3) { animation-delay: 0.3s; }
+
+  /* Proofs spectrum slide */
+  .slide[data-phase="proofs"] .slide-inner::before { background: linear-gradient(90deg, var(--orange), var(--blue), var(--green)); }
+  .proofs-slide { padding: 48px 56px; }
+  .proofs-title { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 40px; }
+  .proofs-spectrum { display: flex; align-items: stretch; gap: 0; max-width: 960px; margin: 0 auto; }
+  .proof-box { flex: 1; padding: 28px 28px 24px; border-radius: 14px; display: flex; flex-direction: column; gap: 16px; }
+  .proof-box.optional { background: rgba(232,168,56,0.08); border: 1.5px solid rgba(232,168,56,0.25); }
+  .proof-box.mandatory { background: rgba(74,144,217,0.08); border: 1.5px solid rgba(74,144,217,0.25); }
+  .proof-box-header { display: flex; align-items: center; gap: 10px; }
+  .proof-box-label { font-size: 20px; font-weight: 700; }
+  .proof-box-tag { font-family: var(--mono); font-size: 10px; padding: 3px 10px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .proof-box.optional .proof-box-tag { background: rgba(232,168,56,0.15); color: var(--orange); }
+  .proof-box.mandatory .proof-box-tag { background: rgba(74,144,217,0.15); color: var(--blue-light); }
+  .proof-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .proof-impl { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); line-height: 1.6; }
+  .proof-impl strong { color: var(--text-muted); font-weight: 600; }
+  .proofs-arrow-col { width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; gap: 6px; }
+  .proofs-arrow-line { width: 2px; height: 0; flex: 1; max-height: 40px; }
+  .proofs-arrow-icon { color: var(--text-muted); font-size: 28px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .proofs-arrow-icon svg { opacity: 0.7; }
+  .proofs-arrow-label { font-family: var(--mono); font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+  .slide.active .proof-box.optional { animation: fadeInUp 0.45s ease 0.1s both; }
+  .slide.active .proofs-arrow-col { animation: fadeIn 0.4s ease 0.25s both; }
+  .slide.active .proof-box.mandatory { animation: fadeInUp 0.45s ease 0.3s both; }
+  .slide.active .proofs-title { animation: fadeInUp 0.4s ease 0.05s both; }
+
+  /* Projects slide */
+  .slide[data-phase="projects"] .slide-inner::before { background: linear-gradient(90deg, var(--blue), var(--orange), var(--green), var(--purple)); }
+  .projects-slide { padding: 48px 56px; }
+  .projects-title { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 36px; }
+  .projects-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .project-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 18px; display: flex; align-items: center; gap: 14px; transition: border-color 0.2s; }
+  .project-card:hover { border-color: var(--border-light); }
+  .project-num { width: 32px; height: 32px; border-radius: 50%; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+  .project-num.ext { background: var(--purple); }
+  .project-name { font-size: 13px; font-weight: 600; line-height: 1.3; }
+  .ext-tag { font-family: var(--mono); font-size: 9px; color: var(--purple-light); background: rgba(176,124,216,0.15); padding: 2px 6px; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
+  .project-external { border-color: rgba(176,124,216,0.25); }
+  .slide.active .project-card { animation: fadeInUp 0.35s ease both; }
+  .slide.active .project-card:nth-child(1) { animation-delay: 0.05s; }
+  .slide.active .project-card:nth-child(2) { animation-delay: 0.08s; }
+  .slide.active .project-card:nth-child(3) { animation-delay: 0.11s; }
+  .slide.active .project-card:nth-child(4) { animation-delay: 0.14s; }
+  .slide.active .project-card:nth-child(5) { animation-delay: 0.17s; }
+  .slide.active .project-card:nth-child(6) { animation-delay: 0.20s; }
+  .slide.active .project-card:nth-child(7) { animation-delay: 0.23s; }
+  .slide.active .project-card:nth-child(8) { animation-delay: 0.26s; }
+  .slide.active .projects-title { animation: fadeInUp 0.4s ease 0.02s both; }
+
+  /* Transition/section slides */
+  .transition-slide { display: flex; align-items: center; justify-content: center; min-height: 480px; padding: 60px 52px; }
+  .transition-text { font-size: 52px; font-weight: 700; letter-spacing: -1px; text-align: center; }
+  .slide[data-phase="transition-glamsterdam"] .slide-inner::before { background: linear-gradient(90deg, var(--green), var(--blue), var(--purple)); }
+  .slide[data-phase="transition-zkevm"] .slide-inner::before { background: linear-gradient(90deg, var(--orange), var(--blue), var(--orange)); }
+  .slide.active .transition-text { animation: fadeInUp 0.5s ease 0.1s both; }
+
+  /* Summit slide */
+  .slide[data-phase="summit"] .slide-inner::before { background: linear-gradient(90deg, var(--orange), var(--blue), var(--orange)); }
+  .summit-slide { min-height: 480px; padding: 56px 64px; display: flex; align-items: center; justify-content: center; }
+  .summit-content { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .summit-eyebrow { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--orange); margin-bottom: 16px; }
+  .summit-title { font-size: 48px; font-weight: 700; letter-spacing: -1px; margin-bottom: 16px; }
+  .summit-location { display: flex; align-items: center; gap: 8px; font-size: 18px; color: var(--text-muted); margin-bottom: 40px; }
+  .summit-qr-area { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .summit-qr { background: var(--bg-card); border-radius: 16px; padding: 20px; border: 1.5px solid var(--border-light); }
+  .summit-qr img { display: block; border-radius: 4px; }
+  .summit-qr-label { font-family: var(--mono); font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+  .slide.active .summit-eyebrow { animation: fadeInUp 0.4s ease 0.05s both; }
+  .slide.active .summit-title { animation: fadeInUp 0.5s ease 0.1s both; }
+  .slide.active .summit-location { animation: fadeInUp 0.4s ease 0.2s both; }
+  .slide.active .summit-qr-area { animation: fadeInUp 0.5s ease 0.3s both; }
+
+  /* Scalability problem slide */
+  .slide[data-phase="scalability"] .slide-inner::before { background: linear-gradient(90deg, #e05252, var(--orange), var(--blue)); }
+  .scalability-slide { padding: 48px 56px; }
+  .scalability-title { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 40px; }
+  .cascade { display: flex; align-items: stretch; gap: 0; max-width: 960px; margin: 0 auto; }
+  .cascade-step { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 24px 16px; border: 1.5px dashed var(--border); border-radius: 12px; }
+  .cascade-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .cascade-icon.ci-1 { background: rgba(74,144,217,0.12); border: 1px solid rgba(74,144,217,0.2); }
+  .cascade-icon.ci-2 { background: rgba(232,168,56,0.12); border: 1px solid rgba(232,168,56,0.2); }
+  .cascade-icon.ci-3 { background: rgba(224,82,82,0.12); border: 1px solid rgba(224,82,82,0.2); }
+  .cascade-icon.ci-4 { background: rgba(224,82,82,0.12); border: 1px solid rgba(224,82,82,0.2); }
+  .cascade-label { font-size: 14px; font-weight: 600; line-height: 1.4; }
+  .cascade-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+  .cascade-arrow { display: flex; align-items: center; justify-content: center; width: 36px; flex-shrink: 0; color: var(--text-dim); font-size: 18px; }
+  .scalability-conclusion { margin-top: 36px; text-align: center; font-size: 14px; color: var(--text-muted); padding: 16px 24px; background: rgba(74,144,217,0.06); border: 1px solid rgba(74,144,217,0.15); border-radius: 10px; max-width: 640px; margin-left: auto; margin-right: auto; }
+  .scalability-conclusion strong { color: var(--blue-light); font-weight: 600; }
+  .slide.active .cascade-step:nth-child(1) { animation: fadeInUp 0.4s ease 0.05s both; }
+  .slide.active .cascade-arrow:nth-of-type(1) { animation: fadeIn 0.3s ease 0.15s both; }
+  .slide.active .cascade-step:nth-child(3) { animation: fadeInUp 0.4s ease 0.15s both; }
+  .slide.active .cascade-arrow:nth-of-type(2) { animation: fadeIn 0.3s ease 0.25s both; }
+  .slide.active .cascade-step:nth-child(5) { animation: fadeInUp 0.4s ease 0.25s both; }
+  .slide.active .cascade-arrow:nth-of-type(3) { animation: fadeIn 0.3s ease 0.35s both; }
+  .slide.active .cascade-step:nth-child(7) { animation: fadeInUp 0.4s ease 0.35s both; }
+  .slide.active .scalability-title { animation: fadeInUp 0.4s ease 0.02s both; }
+  .slide.active .scalability-conclusion { animation: fadeInUp 0.4s ease 0.45s both; }
+
+  /* Section divider */
+  .section-badge { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 4px 12px; border-radius: 6px; margin-bottom: 8px; }
+  .section-badge.nozk { background: rgba(176,124,216,0.15); color: var(--purple-light); }
+  .section-badge.zk { background: rgba(232,168,56,0.15); color: var(--orange); }
+
+  /* Nav */
+  .nav { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; z-index: 100; }
+  .nav-btn { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg-slide); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s; }
+  .nav-btn:hover { background: var(--bg-card); color: var(--text); border-color: var(--text-muted); }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .nav-dots { display: flex; gap: 8px; }
+  .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: all 0.3s; cursor: pointer; }
+  .nav-dot.active { background: var(--blue); transform: scale(1.3); }
+  .slide-counter { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+  .kb-hint { position: fixed; bottom: 72px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 10px; color: var(--text-dim); opacity: 0.6; z-index: 100; transition: opacity 1s; }
+  .kb-hint.hidden { opacity: 0; }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ========== SLIDE 0: TITLE ========== -->
+  <div class="slide active" data-phase="title">
+    <div class="slide-inner title-slide">
+      <div class="title-content">
+        <div class="title-hero">L1-zkEVM</div>
+        <div class="title-sub">breakout #1</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 1: LOGISTICS ========== -->
+  <div class="slide" data-phase="logistics">
+    <div class="slide-inner logistics-slide">
+      <div class="logistics-title">Logistics</div>
+      <div class="logistics-grid">
+        <div class="logistics-item">
+          <div class="logistics-icon li-cal">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4a90d9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <div class="logistics-text"><div class="logistics-label">Date</div><div class="logistics-value">2nd Wednesday of the month</div></div>
+        </div>
+        <div class="logistics-item">
+          <div class="logistics-icon li-time">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e8a838" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="logistics-text"><div class="logistics-label">Time</div><div class="logistics-value">3PM UTC</div></div>
+        </div>
+        <div class="logistics-item">
+          <div class="logistics-icon li-chat">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b07cd8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="logistics-text"><div class="logistics-label">Async</div><div class="logistics-value">Eth R&D Discord</div><div class="logistics-sub">For ongoing async conversation between calls</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 2: STATELESS SUMMIT ========== -->
+  <div class="slide" data-phase="summit">
+    <div class="slide-inner summit-slide">
+      <div class="summit-content">
+        <div class="summit-eyebrow">Upcoming Event</div>
+        <div class="summit-title">Stateless Summit</div>
+        <div class="summit-location">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8a838" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span>Cannes, France</span>
+        </div>
+        <div class="summit-qr-area">
+          <div class="summit-qr">
+            <svg width="180" height="180" version="1.1" viewBox="0 0 37 37" xmlns="http://www.w3.org/2000/svg"><path d="M0,0H1V1H0zM1,0H2V1H1zM2,0H3V1H2zM3,0H4V1H3zM4,0H5V1H4zM5,0H6V1H5zM6,0H7V1H6zM11,0H12V1H11zM12,0H13V1H12zM14,0H15V1H14zM15,0H16V1H15zM22,0H23V1H22zM23,0H24V1H23zM24,0H25V1H24zM26,0H27V1H26zM30,0H31V1H30zM31,0H32V1H31zM32,0H33V1H32zM33,0H34V1H33zM34,0H35V1H34zM35,0H36V1H35zM36,0H37V1H36zM0,1H1V2H0zM6,1H7V2H6zM10,1H11V2H10zM15,1H16V2H15zM17,1H18V2H17zM18,1H19V2H18zM20,1H21V2H20zM22,1H23V2H22zM24,1H25V2H24zM26,1H27V2H26zM27,1H28V2H27zM30,1H31V2H30zM36,1H37V2H36zM0,2H1V3H0zM2,2H3V3H2zM3,2H4V3H3zM4,2H5V3H4zM6,2H7V3H6zM8,2H9V3H8zM9,2H10V3H9zM10,2H11V3H10zM11,2H12V3H11zM13,2H14V3H13zM15,2H16V3H15zM21,2H22V3H21zM22,2H23V3H22zM23,2H24V3H23zM27,2H28V3H27zM30,2H31V3H30zM32,2H33V3H32zM33,2H34V3H33zM34,2H35V3H34zM36,2H37V3H36zM0,3H1V4H0zM2,3H3V4H2zM3,3H4V4H3zM4,3H5V4H4zM6,3H7V4H6zM8,3H9V4H8zM9,3H10V4H9zM11,3H12V4H11zM12,3H13V4H12zM13,3H14V4H13zM16,3H17V4H16zM17,3H18V4H17zM18,3H19V4H18zM20,3H21V4H20zM21,3H22V4H21zM22,3H23V4H22zM24,3H25V4H24zM25,3H26V4H25zM26,3H27V4H26zM27,3H28V4H27zM28,3H29V4H28zM30,3H31V4H30zM32,3H33V4H32zM33,3H34V4H33zM34,3H35V4H34zM36,3H37V4H36zM0,4H1V5H0zM2,4H3V5H2zM3,4H4V5H3zM4,4H5V5H4zM6,4H7V5H6zM8,4H9V5H8zM9,4H10V5H9zM11,4H12V5H11zM12,4H13V5H12zM15,4H16V5H15zM16,4H17V5H16zM17,4H18V5H17zM18,4H19V5H18zM19,4H20V5H19zM20,4H21V5H20zM21,4H22V5H21zM22,4H23V5H22zM23,4H24V5H23zM24,4H25V5H24zM25,4H26V5H25zM28,4H29V5H28zM30,4H31V5H30zM32,4H33V5H32zM33,4H34V5H33zM34,4H35V5H34zM36,4H37V5H36zM0,5H1V6H0zM6,5H7V6H6zM8,5H9V6H8zM9,5H10V6H9zM10,5H11V6H10zM11,5H12V6H11zM12,5H13V6H12zM14,5H15V6H14zM17,5H18V6H17zM20,5H21V6H20zM21,5H22V6H21zM27,5H28V6H27zM28,5H29V6H28zM30,5H31V6H30zM36,5H37V6H36zM0,6H1V7H0zM1,6H2V7H1zM2,6H3V7H2zM3,6H4V7H3zM4,6H5V7H4zM5,6H6V7H5zM6,6H7V7H6zM8,6H9V7H8zM10,6H11V7H10zM12,6H13V7H12zM14,6H15V7H14zM16,6H17V7H16zM18,6H19V7H18zM20,6H21V7H20zM22,6H23V7H22zM24,6H25V7H24zM26,6H27V7H26zM28,6H29V7H28zM30,6H31V7H30zM31,6H32V7H31zM32,6H33V7H32zM33,6H34V7H33zM34,6H35V7H34zM35,6H36V7H35zM36,6H37V7H36zM8,7H9V8H8zM9,7H10V8H9zM12,7H13V8H12zM15,7H16V8H15zM16,7H17V8H16zM17,7H18V8H17zM18,7H19V8H18zM19,7H20V8H19zM21,7H22V8H21zM22,7H23V8H22zM26,7H27V8H26zM28,7H29V8H28zM0,8H1V9H0zM2,8H3V9H2zM3,8H4V9H3zM4,8H5V9H4zM5,8H6V9H5zM6,8H7V9H6zM11,8H12V9H11zM13,8H14V9H13zM14,8H15V9H14zM16,8H17V9H16zM24,8H25V9H24zM25,8H26V9H25zM28,8H29V9H28zM30,8H31V9H30zM31,8H32V9H31zM32,8H33V9H32zM33,8H34V9H33zM34,8H35V9H34zM0,9H1V10H0zM4,9H5V10H4zM7,9H8V10H7zM8,9H9V10H8zM10,9H11V10H10zM11,9H12V10H11zM15,9H16V10H15zM17,9H18V10H17zM18,9H19V10H18zM20,9H21V10H20zM21,9H22V10H21zM22,9H23V10H22zM23,9H24V10H23zM25,9H26V10H25zM26,9H27V10H26zM29,9H30V10H29zM35,9H36V10H35zM2,10H3V11H2zM5,10H6V11H5zM6,10H7V11H6zM15,10H16V11H15zM16,10H17V11H16zM19,10H20V11H19zM27,10H28V11H27zM28,10H29V11H28zM29,10H30V11H29zM30,10H31V11H30zM31,10H32V11H31zM33,10H34V11H33zM35,10H36V11H35zM36,10H37V11H36zM0,11H1V12H0zM1,11H2V12H1zM2,11H3V12H2zM4,11H5V12H4zM7,11H8V12H7zM9,11H10V12H9zM10,11H11V12H10zM11,11H12V12H11zM15,11H16V12H15zM19,11H20V12H19zM20,11H21V12H20zM21,11H22V12H21zM22,11H23V12H22zM24,11H25V12H24zM26,11H27V12H26zM29,11H30V12H29zM30,11H31V12H30zM31,11H32V12H31zM36,11H37V12H36zM0,12H1V13H0zM1,12H2V13H1zM3,12H4V13H3zM5,12H6V13H5zM6,12H7V13H6zM8,12H9V13H8zM10,12H11V13H10zM13,12H14V13H13zM14,12H15V13H14zM15,12H16V13H15zM19,12H20V13H19zM20,12H21V13H20zM22,12H23V13H22zM24,12H25V13H24zM25,12H26V13H25zM26,12H27V13H26zM27,12H28V13H27zM29,12H30V13H29zM30,12H31V13H30zM32,12H33V13H32zM33,12H34V13H33zM34,12H35V13H34zM35,12H36V13H35zM36,12H37V13H36zM1,13H2V14H1zM2,13H3V14H2zM4,13H5V14H4zM5,13H6V14H5zM7,13H8V14H7zM9,13H10V14H9zM13,13H14V14H13zM14,13H15V14H14zM19,13H20V14H19zM20,13H21V14H20zM22,13H23V14H22zM23,13H24V14H23zM28,13H29V14H28zM31,13H32V14H31zM35,13H36V14H35zM1,14H2V15H1zM3,14H4V15H3zM5,14H6V15H5zM6,14H7V15H6zM7,14H8V15H7zM10,14H11V15H10zM11,14H12V15H11zM13,14H14V15H13zM15,14H16V15H15zM18,14H19V15H18zM20,14H21V15H20zM21,14H22V15H21zM24,14H25V15H24zM27,14H28V15H27zM29,14H30V15H29zM30,14H31V15H30zM31,14H32V15H31zM32,14H33V15H32zM33,14H34V15H33zM36,14H37V15H36zM2,15H3V16H2zM3,15H4V16H3zM8,15H9V16H8zM9,15H10V16H9zM11,15H12V16H11zM14,15H15V16H14zM15,15H16V16H15zM16,15H17V16H16zM20,15H21V16H20zM21,15H22V16H21zM22,15H23V16H22zM28,15H29V16H28zM29,15H30V16H29zM30,15H31V16H30zM31,15H32V16H31zM32,15H33V16H32zM35,15H36V16H35zM36,15H37V16H36zM2,16H3V17H2zM4,16H5V17H4zM6,16H7V17H6zM8,16H9V17H8zM9,16H10V17H9zM12,16H13V17H12zM14,16H15V17H14zM15,16H16V17H15zM18,16H19V17H18zM22,16H23V17H22zM25,16H26V17H25zM28,16H29V17H28zM30,16H31V17H30zM31,16H32V17H31zM32,16H33V17H32zM34,16H35V17H34zM36,16H37V17H36zM4,17H5V18H4zM5,17H6V18H5zM8,17H9V18H8zM9,17H10V18H9zM12,17H13V18H12zM13,17H14V18H13zM14,17H15V18H14zM15,17H16V18H15zM16,17H17V18H16zM21,17H22V18H21zM23,17H24V18H23zM24,17H25V18H24zM25,17H26V18H25zM26,17H27V18H26zM29,17H30V18H29zM35,17H36V18H35zM0,18H1V19H0zM1,18H2V19H1zM4,18H5V19H4zM6,18H7V19H6zM7,18H8V19H7zM9,18H10V19H9zM11,18H12V19H11zM12,18H13V19H12zM14,18H15V19H14zM17,18H18V19H17zM18,18H19V19H18zM20,18H21V19H20zM21,18H22V19H21zM22,18H23V19H22zM25,18H26V19H25zM26,18H27V19H26zM27,18H28V19H27zM29,18H30V19H29zM30,18H31V19H30zM31,18H32V19H31zM33,18H34V19H33zM35,18H36V19H35zM36,18H37V19H36zM0,19H1V20H0zM4,19H5V20H4zM5,19H6V20H5zM7,19H8V20H7zM9,19H10V20H9zM12,19H13V20H12zM13,19H14V20H13zM14,19H15V20H14zM16,19H17V20H16zM21,19H22V20H21zM23,19H24V20H23zM26,19H27V20H26zM27,19H28V20H27zM31,19H32V20H31zM33,19H34V20H33zM36,19H37V20H36zM2,20H3V21H2zM3,20H4V21H3zM6,20H7V21H6zM7,20H8V21H7zM13,20H14V21H13zM14,20H15V21H14zM16,20H17V21H16zM17,20H18V21H17zM19,20H20V21H19zM22,20H23V21H22zM25,20H26V21H25zM26,20H27V21H26zM27,20H28V21H27zM29,20H30V21H29zM30,20H31V21H30zM32,20H33V21H32zM34,20H35V21H34zM0,21H1V22H0zM2,21H3V22H2zM3,21H4V22H3zM4,21H5V22H4zM5,21H6V22H5zM7,21H8V22H7zM8,21H9V22H8zM10,21H11V22H10zM11,21H12V22H11zM12,21H13V22H12zM16,21H17V22H16zM17,21H18V22H17zM19,21H20V22H19zM20,21H21V22H20zM21,21H22V22H21zM23,21H24V22H23zM28,21H29V22H28zM33,21H34V22H33zM0,22H1V23H0zM2,22H3V23H2zM3,22H4V23H3zM4,22H5V23H4zM5,22H6V23H5zM6,22H7V23H6zM9,22H10V23H9zM10,22H11V23H10zM11,22H12V23H11zM13,22H14V23H13zM14,22H15V23H14zM15,22H16V23H15zM16,22H17V23H16zM17,22H18V23H17zM21,22H22V23H21zM22,22H23V23H22zM27,22H28V23H27zM29,22H30V23H29zM30,22H31V23H30zM31,22H32V23H31zM32,22H33V23H32zM33,22H34V23H33zM35,22H36V23H35zM36,22H37V23H36zM0,23H1V24H0zM2,23H3V24H2zM4,23H5V24H4zM7,23H8V24H7zM8,23H9V24H8zM9,23H10V24H9zM10,23H11V24H10zM11,23H12V24H11zM13,23H14V24H13zM14,23H15V24H14zM15,23H16V24H15zM17,23H18V24H17zM18,23H19V24H18zM20,23H21V24H20zM21,23H22V24H21zM22,23H23V24H22zM24,23H25V24H24zM26,23H27V24H26zM28,23H29V24H28zM30,23H31V24H30zM31,23H32V24H31zM32,23H33V24H32zM0,24H1V25H0zM2,24H3V25H2zM3,24H4V25H3zM4,24H5V25H4zM6,24H7V25H6zM8,24H9V25H8zM9,24H10V25H9zM14,24H15V25H14zM16,24H17V25H16zM19,24H20V25H19zM20,24H21V25H20zM22,24H23V25H22zM23,24H24V25H23zM25,24H26V25H25zM28,24H29V25H28zM30,24H31V25H30zM31,24H32V25H31zM32,24H33V25H32zM34,24H35V25H34zM36,24H37V25H36zM0,25H1V26H0zM1,25H2V26H1zM2,25H3V26H2zM4,25H5V26H4zM7,25H8V26H7zM10,25H11V26H10zM12,25H13V26H12zM14,25H15V26H14zM15,25H16V26H15zM18,25H19V26H18zM19,25H20V26H19zM21,25H22V26H21zM23,25H24V26H23zM24,25H25V26H24zM25,25H26V26H25zM26,25H27V26H26zM29,25H30V26H29zM33,25H34V26H33zM34,25H35V26H34zM0,26H1V27H0zM2,26H3V27H2zM5,26H6V27H5zM6,26H7V27H6zM7,26H8V27H7zM9,26H10V27H9zM13,26H14V27H13zM14,26H15V27H14zM15,26H16V27H15zM16,26H17V27H16zM20,26H21V27H20zM21,26H22V27H21zM24,26H25V27H24zM25,26H26V27H25zM26,26H27V27H26zM27,26H28V27H27zM29,26H30V27H29zM30,26H31V27H30zM31,26H32V27H31zM35,26H36V27H35zM36,26H37V27H36zM0,27H1V28H0zM3,27H4V28H3zM4,27H5V28H4zM7,27H8V28H7zM9,27H10V28H9zM10,27H11V28H10zM12,27H13V28H12zM15,27H16V28H15zM21,27H22V28H21zM22,27H23V28H22zM27,27H28V28H27zM30,27H31V28H30zM32,27H33V28H32zM33,27H34V28H33zM0,28H1V29H0zM2,28H3V29H2zM5,28H6V29H5zM6,28H7V29H6zM7,28H8V29H7zM9,28H10V29H9zM10,28H11V29H10zM11,28H12V29H11zM12,28H13V29H12zM13,28H14V29H13zM15,28H16V29H15zM17,28H18V29H17zM22,28H23V29H22zM24,28H25V29H24zM25,28H26V29H25zM28,28H29V29H28zM29,28H30V29H29zM30,28H31V29H30zM31,28H32V29H31zM32,28H33V29H32zM34,28H35V29H34zM8,29H9V30H8zM11,29H12V30H11zM13,29H14V30H13zM16,29H17V30H16zM18,29H19V30H18zM19,29H20V30H19zM20,29H21V30H20zM21,29H22V30H21zM22,29H23V30H22zM23,29H24V30H23zM25,29H26V30H25zM27,29H28V30H27zM28,29H29V30H28zM32,29H33V30H32zM33,29H34V30H33zM35,29H36V30H35zM0,30H1V31H0zM1,30H2V31H1zM2,30H3V31H2zM3,30H4V31H3zM4,30H5V31H4zM5,30H6V31H5zM6,30H7V31H6zM11,30H12V31H11zM12,30H13V31H12zM13,30H14V31H13zM14,30H15V31H14zM15,30H16V31H15zM16,30H17V31H16zM18,30H19V31H18zM20,30H21V31H20zM22,30H23V31H22zM28,30H29V31H28zM30,30H31V31H30zM32,30H33V31H32zM34,30H35V31H34zM36,30H37V31H36zM0,31H1V32H0zM6,31H7V32H6zM8,31H9V32H8zM11,31H12V32H11zM12,31H13V32H12zM14,31H15V32H14zM15,31H16V32H15zM16,31H17V32H16zM20,31H21V32H20zM21,31H22V32H21zM23,31H24V32H23zM24,31H25V32H24zM27,31H28V32H27zM28,31H29V32H28zM32,31H33V32H32zM33,31H34V32H33zM35,31H36V32H35zM36,31H37V32H36zM0,32H1V33H0zM2,32H3V33H2zM3,32H4V33H3zM4,32H5V33H4zM6,32H7V33H6zM8,32H9V33H8zM9,32H10V33H9zM10,32H11V33H10zM11,32H12V33H11zM13,32H14V33H13zM18,32H19V33H18zM22,32H23V33H22zM25,32H26V33H25zM26,32H27V33H26zM27,32H28V33H27zM28,32H29V33H28zM29,32H30V33H29zM30,32H31V33H30zM31,32H32V33H31zM32,32H33V33H32zM34,32H35V33H34zM35,32H36V33H35zM0,33H1V34H0zM2,33H3V34H2zM3,33H4V34H3zM4,33H5V34H4zM6,33H7V34H6zM8,33H9V34H8zM9,33H10V34H9zM11,33H12V34H11zM13,33H14V34H13zM15,33H16V34H15zM16,33H17V34H16zM17,33H18V34H17zM19,33H20V34H19zM20,33H21V34H20zM21,33H22V34H21zM23,33H24V34H23zM24,33H25V34H24zM25,33H26V34H25zM27,33H28V34H27zM28,33H29V34H28zM29,33H30V34H29zM30,33H31V34H30zM32,33H34V34H32zM34,33H35V34H34zM36,33H37V34H36zM0,34H1V35H0zM2,34H3V35H2zM3,34H4V35H3zM4,34H5V35H4zM6,34H7V35H6zM8,34H9V35H8zM12,34H13V35H12zM13,34H14V35H13zM14,34H15V35H14zM21,34H22V35H21zM22,34H23V35H22zM25,34H26V35H25zM26,34H27V35H26zM28,34H29V35H28zM33,34H34V35H33zM35,34H36V35H35zM36,34H37V35H36zM0,35H1V36H0zM6,35H7V36H6zM10,35H11V36H10zM11,35H12V36H11zM12,35H13V36H12zM13,35H14V36H13zM16,35H17V36H16zM20,35H21V36H20zM21,35H22V36H21zM28,35H29V36H28zM30,35H31V36H30zM32,35H33V36H32zM33,35H34V36H33zM36,35H37V36H36zM0,36H1V37H0zM1,36H2V37H1zM2,36H3V37H2zM3,36H4V37H3zM4,36H5V37H4zM5,36H6V37H5zM6,36H7V37H6zM8,36H9V37H8zM10,36H11V37H10zM12,36H13V37H12zM13,36H14V37H13zM17,36H18V37H17zM22,36H23V37H22zM25,36H26V37H25zM26,36H27V37H26zM27,36H28V37H27zM29,36H30V37H29zM30,36H31V37H30zM32,36H33V37H32zM34,36H35V37H34zM35,36H36V37H35zM36,36H37V37H36z" id="qr-path" fill="#e0e4f0" fill-opacity="1" fill-rule="nonzero" stroke="none"/></svg>
+          </div>
+          <div class="summit-qr-label">Scan for details</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE: MANDATORY vs OPTIONAL PROOFS ========== -->
+  <div class="slide" data-phase="proofs">
+    <div class="slide-inner proofs-slide">
+      <div class="proofs-title">Optional to Mandatory</div>
+
+      <div class="proofs-spectrum">
+
+        <div class="proof-box optional">
+          <div class="proof-box-header">
+            <div class="proof-box-label">Optional Proofs</div>
+            <div class="proof-box-tag">near-term</div>
+          </div>
+          <div class="proof-desc">Some attesters can opt into accepting proofs. The majority will continue to re-execute as normal.</div>
+        </div>
+
+        <div class="proofs-arrow-col">
+          <div class="proofs-arrow-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </div>
+        </div>
+
+        <div class="proof-box mandatory">
+          <div class="proof-box-header">
+            <div class="proof-box-label">Mandatory Proofs</div>
+            <div class="proof-box-tag">end-state</div>
+          </div>
+          <div class="proof-desc">All attesters require proofs in order to deem a block as valid. No re-execution needed.</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== TRANSITION: Post Glamsterdam ========== -->
+  <div class="slide" data-phase="transition-glamsterdam">
+    <div class="slide-inner transition-slide">
+      <div class="transition-text">Post Glamsterdam</div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE: PHASE 1 — Block Proposal (no zk) ========== -->
+  <div class="slide" data-phase="1-nozk">
+    <div class="slide-inner">
+      <div class="header">
+        <div class="htitle"><span class="section-badge nozk">no zk</span>&ensp;Phase 1: Block Proposal</div>
+      </div>
+      <div class="columns">
+        <div class="column">
+          <div class="actor"><div class="icon icon-blue">B</div><div class="name">Builder</div></div>
+          <div class="box">
+            <div class="infra">CL client</div><div class="infra">EL client</div>
+            <div style="height:40px"></div>
+            <div class="lbl">↓ produces</div>
+            <div class="c c-blue">Execution Payload</div>
+            <div style="height:30px"></div>
+            <div class="lbl">↓ submits</div>
+            <div class="c c-green">Bid (Payload commitment)</div>
+          </div>
+        </div>
+        <div class="arrow-col p1-a"><div class="arrow-right green"></div></div>
+        <div class="column">
+          <div class="actor"><div class="icon icon-green">P</div><div class="name">Proposer</div></div>
+          <div class="box">
+            <div class="infra">CL client</div>
+            <div class="lbl">↓ selects</div><div class="c c-green">Bid</div>
+            <div class="lbl">↓ produces</div><div class="c c-green">Beacon Block</div>
+            <div style="height:30px"></div>
+            <div class="lbl">↓ submits</div>
+            <div class="c c-green">Beacon Block</div>
+          </div>
+        </div>
+        <div class="arrow-col p1-b"><div class="arrow-right green"></div></div>
+        <div class="column">
+          <div class="actor"><div class="icon icon-purple">A</div><div class="name">Attester</div></div>
+          <div class="box">
+            <div class="infra">CL client</div>
+            <div class="lbl">↓ validates</div><div class="c c-green">Beacon Block</div>
+            <div class="lbl">↓ produces</div><div class="c c-purple">Attestation</div>
+            <div style="height:30px"></div>
+            <div class="lbl">↓ submits</div>
+            <div class="c c-purple">Attestation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 3: PHASE 2 — Block Propagation (no zk) ========== -->
+  <div class="slide" data-phase="2-nozk">
+    <div class="slide-inner">
+      <div class="header">
+        <div class="htitle"><span class="section-badge nozk">no zk</span>&ensp;Phase 2: Payload Propagation</div>
+      </div>
+      <div class="columns" style="max-width:800px; margin:0 auto;">
+        <div class="column wide">
+          <div class="actor"><div class="icon icon-blue">B</div><div class="name">Builder</div></div>
+          <div class="box">
+            <div class="infra">CL client</div><div class="infra">EL client</div>
+            <div class="lbl">↓ submits</div>
+            <div class="c c-blue">Execution Payload</div>
+          </div>
+        </div>
+        <div class="arrow-col p2-a"><div class="arrow-right blue"></div></div>
+        <div class="column wide">
+          <div class="actor"><div class="icon icon-purple">A</div><div class="name">Attester</div></div>
+          <div class="box">
+            <div class="infra">CL client</div><div class="infra">EL client</div>
+            <div class="lbl">↓ validates</div><div class="c c-blue">Execution Payload</div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center; margin-top:20px; font-family:var(--mono); font-size:11px; color:var(--text-dim); opacity:0.7;">* PTC has been omitted</div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE: SCALABILITY PROBLEM ========== -->
+  <div class="slide" data-phase="scalability">
+    <div class="slide-inner scalability-slide">
+      <div class="scalability-title">The Scalability Problem</div>
+
+      <div class="cascade">
+        <div class="cascade-step">
+          <div class="cascade-label">Gas limit increases</div>
+          <div class="cascade-desc">More computation per block</div>
+        </div>
+
+        <div class="cascade-arrow">→</div>
+
+        <div class="cascade-step">
+          <div class="cascade-label">Heavier execution</div>
+          <div class="cascade-desc">Each block takes longer to validate</div>
+        </div>
+
+        <div class="cascade-arrow">→</div>
+
+        <div class="cascade-step">
+          <div class="cascade-label">Hardware requirements rise</div>
+          <div class="cascade-desc">Attesters need more powerful machines to keep up</div>
+        </div>
+
+        <div class="cascade-arrow">→</div>
+
+        <div class="cascade-step">
+          <div class="cascade-label">Centralization pressure</div>
+          <div class="cascade-desc">Fewer participants can validate within the allotted time</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========== TRANSITION: Post zkEVM ========== -->
+  <div class="slide" data-phase="transition-zkevm">
+    <div class="slide-inner transition-slide">
+      <div class="transition-text">Post zkEVM</div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE: PHASE 1 — Block Proposal (zk) ========== -->
+  <div class="slide" data-phase="1-zk">
+    <div class="slide-inner">
+      <div class="header">
+        <div class="htitle"><span class="section-badge zk">zk</span>&ensp;Phase 1: Block Proposal</div>
+      </div>
+      <div class="columns">
+        <div class="column">
+          <div class="actor"><div class="icon icon-blue">B</div><div class="name">Builder</div></div>
+          <div class="box">
+            <div class="infra">CL client</div><div class="infra">EL client</div>
+            <div style="height:20px"></div>
+            <div class="lbl">↓ produces</div>
+            <div class="c c-blue">Execution Payload</div>
+            <div class="c c-blue">Execution Witness</div>
+            <div style="height:30px"></div>
+            <div class="lbl">↓ submits</div>
+            <div class="c c-green">Bid (Payload commitment)</div>
+          </div>
+        </div>
+        <div class="arrow-col p1z-a"><div class="arrow-right green"></div></div>
+        <div class="column">
+          <div class="actor"><div class="icon icon-green">P</div><div class="name">Proposer</div></div>
+          <div class="box">
+            <div class="infra">CL client</div>
+            <div class="lbl">↓ selects</div><div class="c c-green">Bid</div>
+            <div class="lbl">↓ produces</div><div class="c c-green">Beacon Block</div>
+            <div style="height:30px"></div>
+            <div class="lbl">↓ submits</div>
+            <div class="c c-green">Beacon Block</div>
+          </div>
+        </div>
+        <div class="arrow-col p1z-b"><div class="arrow-right green"></div></div>
+        <div class="column">
+          <div class="actor"><div class="icon icon-purple">A</div><div class="name">Attester</div></div>
+          <div class="box">
+            <div class="infra">CL client</div>
+            <div class="lbl">↓ validates</div><div class="c c-green">Beacon Block</div>
+            <div class="lbl">↓ produces</div><div class="c c-purple">Attestation</div>
+            <div style="height:30px"></div>
+            <div class="lbl">↓ submits</div>
+            <div class="c c-purple">Attestation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 5: PHASE 2 — Proving (zk) ========== -->
+  <div class="slide" data-phase="2-zk">
+    <div class="slide-inner">
+      <div class="header">
+        <div class="htitle"><span class="section-badge zk">zk</span>&ensp;Phase 2: Proof Propagation</div>
+      </div>
+      <div class="columns">
+        <!-- Builder (submit) -->
+        <div class="column">
+          <div class="actor"><div class="icon icon-blue">B</div><div class="name">Builder</div></div>
+          <div class="box">
+            <div class="infra">CL client</div><div class="infra">EL client</div>
+            <div class="lbl">↓ selects</div>
+            <div class="c c-blue">Guest Programs</div>
+
+            <div class="lbl">↓ submits</div>
+            <div class="c c-blue">Execution Witness</div>
+            <div class="c c-blue">Execution Payload</div>
+            <div class="c c-blue">Guest Programs</div>
+          </div>
+        </div>
+
+        <div class="arrow-col p2z-a"><div class="arrow-right blue"></div></div>
+
+        <!-- Prover -->
+        <div class="column">
+          <div class="actor"><div class="icon icon-orange">P</div><div class="name">Prover</div></div>
+          <div class="box">
+            <div class="infra">zkVM</div>
+            <div class="lbl">↓ proves</div>
+            <div class="c c-blue">Guest Programs</div>
+            <div class="c c-blue">Execution Witness</div>
+            <div class="c c-blue">Execution Payload</div>
+            <div class="lbl">↓ produces</div>
+            <div class="c c-orange">zkEVM Proofs</div>
+            <div class="lbl">↓ submits</div>
+            <div class="c c-orange">zkEVM Proofs</div>
+          </div>
+        </div>
+
+        <div class="arrow-col p2z-b"><div class="arrow-right orange"></div></div>
+
+        <!-- Builder (relay) -->
+        <div class="column narrow">
+          <div class="actor"><div class="icon icon-blue">B</div><div class="name">Builder</div></div>
+          <div class="box" style="padding-bottom:16px;">
+            <div class="infra">CL client</div><div class="infra">EL client</div>
+            <div class="lbl">↓ forwards</div>
+            <div class="c c-orange">zkEVM Proofs</div>
+          </div>
+        </div>
+
+        <div class="arrow-col p2z-c"><div class="arrow-right blue"></div></div>
+
+        <!-- Attester -->
+        <div class="column">
+          <div class="actor"><div class="icon icon-purple">A</div><div class="name">Attester</div></div>
+          <div class="box">
+            <div class="infra">CL client</div>
+
+            <div class="lbl">↓ selects</div>
+            <div class="c c-blue">Guest Programs</div>
+
+            <div class="lbl">↓ uses</div>
+            <div class="c c-green">Bid</div>
+
+            <div class="lbl">↓ verifies</div>
+            <div class="c c-orange">zkEVM Proofs</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========== SLIDE: PROJECTS ========== -->
+  <div class="slide" data-phase="projects">
+    <div class="slide-inner projects-slide">
+      <div class="projects-title">Projects</div>
+      <div class="projects-grid">
+
+        <div class="project-card">
+          <div class="project-num">1</div>
+          <div class="project-name">ExecutionWitness</div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-num">2</div>
+          <div class="project-name">zkEVM Guest Program</div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-num">3</div>
+          <div class="project-name">zkVM-guest API Standardization</div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-num">4</div>
+          <div class="project-name">Consensus Layer Integration</div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-num">5</div>
+          <div class="project-name">Prover Infrastructure</div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-num">6</div>
+          <div class="project-name">Benchmarking and Metrics</div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-num">7</div>
+          <div class="project-name">Security</div>
+        </div>
+
+        <div class="project-card project-external">
+          <div class="project-num ext">8</div>
+          <div class="project-name">ePBS <span class="ext-tag">External</span></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="kb-hint" id="kbHint">← → arrow keys to navigate</div>
+<div class="nav">
+  <button class="nav-btn" id="prevBtn" disabled>‹</button>
+  <div class="nav-dots" id="navDots"></div>
+  <span class="slide-counter" id="counter"></span>
+  <button class="nav-btn" id="nextBtn">›</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const counter = document.getElementById('counter');
+  const navDots = document.getElementById('navDots');
+  const kbHint = document.getElementById('kbHint');
+  let current = 0;
+
+  slides.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goTo(i));
+    navDots.appendChild(dot);
+  });
+
+  function goTo(index) {
+    if (index < 0 || index >= slides.length || index === current) return;
+    const prev = current;
+    slides[prev].classList.remove('active');
+    slides[prev].classList.add('exit-left');
+    current = index;
+    setTimeout(() => { slides[prev].classList.remove('exit-left'); }, 500);
+    slides[current].classList.add('active');
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === slides.length - 1;
+    counter.textContent = `${current + 1} / ${slides.length}`;
+    navDots.querySelectorAll('.nav-dot').forEach((d, i) => { d.classList.toggle('active', i === current); });
+    kbHint.classList.add('hidden');
+  }
+
+  prevBtn.addEventListener('click', () => goTo(current - 1));
+  nextBtn.addEventListener('click', () => goTo(current + 1));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+  });
+
+  // Click anywhere to advance (except nav buttons)
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.nav')) return;
+    goTo(current + 1);
+  });
+  setTimeout(() => kbHint.classList.add('hidden'), 4000);
+</script>
+
+</body>
+</html>
