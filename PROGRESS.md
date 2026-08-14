@@ -29,6 +29,7 @@ The case for that, and the open questions around it, live in [ACD.md](ACD.md). T
 
       | Release | Based on |
       | --- | --- |
+      | [`tests-zkevm@v0.8.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.0) | `glamsterdam-devnet-8` |
       | [`tests-zkevm@v0.6.2`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.6.2) | `glamsterdam-devnet-7` |
       | [`tests-zkevm@v0.6.1`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.6.1) | `glamsterdam-devnet-7` |
       | [`tests-zkevm@v0.6.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.6.0) | `glamsterdam-devnet-7` |
