@@ -107,9 +107,21 @@ class FakeChrome:
     def __init__(self, error: Exception | None = None) -> None:
         self.error = error
         self.rendered: list[str] = []
+        self.rendered_marp: list[tuple[str, bytes]] = []
 
     def render(self, url: str, destination: Path) -> None:
         self.rendered.append(url)
+        if self.error:
+            raise self.error
+        destination.write_bytes(b"%PDF-1.4\nfake\n")
+
+    def render_marp(
+        self,
+        url: str,
+        document: bytes,
+        destination: Path,
+    ) -> None:
+        self.rendered_marp.append((url, document))
         if self.error:
             raise self.error
         destination.write_bytes(b"%PDF-1.4\nfake\n")
@@ -488,6 +500,29 @@ class AcquisitionTests(unittest.TestCase):
             )
         self.assertEqual(chrome.rendered, [source])
         self.assertEqual(result.filename, "03-web-deck.pdf")
+
+    def test_marp_deck_uses_overlay_safe_renderer(self) -> None:
+        source = "https://slides.example.com/deck/"
+        document = b"<html><head></head><body>deck</body></html>"
+        client = FakeClient(
+            responses={source: response(document, source, "text/html")}
+        )
+        chrome = FakeChrome()
+        with tempfile.TemporaryDirectory() as directory:
+            result = updater.archive_presentation(
+                updater.Presentation(
+                    "Marp deck",
+                    source,
+                    kind="marp-web-pdf",
+                ),
+                3,
+                Path(directory),
+                client,  # type: ignore[arg-type]
+                chrome,  # type: ignore[arg-type]
+            )
+        self.assertEqual(chrome.rendered, [])
+        self.assertEqual(chrome.rendered_marp, [(source, document)])
+        self.assertEqual(result.filename, "03-marp-deck.pdf")
 
     def test_permanent_failure_is_recorded_unavailable(self) -> None:
         source = "https://example.com/restricted.pdf"

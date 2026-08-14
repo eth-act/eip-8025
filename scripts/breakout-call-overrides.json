@@ -1,1 +1,36 @@
-{}
+{
+  "2184": {
+    "presentations": [
+      {
+        "title": "Ignacio — projects 1, 2, and 6",
+        "url": "https://docs.google.com/presentation/d/1iS976lc4LY_H06L7v6aB8aaQXcdTzc7j_p2xI6QXhVE/edit?usp=sharing",
+        "filename": "01-ignacio-projects-1-2-6.pdf",
+        "kind": "google-slides"
+      },
+      {
+        "title": "Marcin — project 3",
+        "url": "https://drive.google.com/file/d/1byxArSPp9o3vanjZRHk8woae3vRpcN2b/view",
+        "filename": "02-marcin-project-3.pdf",
+        "kind": "google-drive"
+      },
+      {
+        "title": "Francesco — project 4, optional proofs",
+        "url": "https://frisitano.github.io/slides/decks/optional-proofs-2026-08-13/index.html?v=20260812175500",
+        "filename": "03-francesco-optional-proofs.pdf",
+        "kind": "web-pdf"
+      },
+      {
+        "title": "Han — project 5",
+        "url": "https://docs.google.com/presentation/d/1cIwP42r7MiHZ7fSfr4nBCW_1TtHl7zrychtsj3FoLhY/edit?usp=sharing",
+        "filename": "04-han-project-5.pdf",
+        "kind": "google-slides"
+      },
+      {
+        "title": "Cody — project 7, security",
+        "url": "https://codygunton.github.io/talks-and-writing/2026-08-12-zkevm-breakout/",
+        "filename": "05-cody-project-7-security.pdf",
+        "kind": "marp-web-pdf"
+      }
+    ]
+  }
+}

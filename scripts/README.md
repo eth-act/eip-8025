@@ -40,8 +40,10 @@ If automatic agenda parsing needs curation, add an issue-number entry to
 
 The ordered `presentations` list replaces automatic discovery for that issue.
 `filename` and `kind` are optional. Supported kinds are `auto`, `download`,
-`github-directory`, `google-drive`, `google-slides`, `web-pdf`, and
-`unavailable`; unavailable entries also require a `reason`.
+`github-directory`, `google-drive`, `google-slides`, `marp-web-pdf`, `web-pdf`,
+and `unavailable`; unavailable entries also require a `reason`.
+`marp-web-pdf` suppresses animated lead-slide backgrounds that would otherwise
+repeat over every page when Chrome prints a Marp deck.
 
 Run the offline test suite with:
 

@@ -7,6 +7,7 @@ import argparse
 import dataclasses
 import datetime as dt
 import hashlib
+import html
 import json
 import os
 import re
@@ -53,6 +54,7 @@ SUPPORTED_KINDS = {
     "github-directory",
     "google-drive",
     "google-slides",
+    "marp-web-pdf",
     "unavailable",
     "web-pdf",
 }
@@ -219,8 +221,13 @@ class ChromeRenderer:
             "pass --chrome-binary PATH"
         )
 
-    def render(self, url: str, destination: Path) -> None:
-        validate_https_url(url)
+    def _render_target(
+        self,
+        target: str,
+        destination: Path,
+        *,
+        extra_args: Sequence[str] = (),
+    ) -> None:
         binary = self.resolve_binary()
         with tempfile.TemporaryDirectory(prefix="breakout-chrome-") as profile:
             command = [
@@ -233,7 +240,8 @@ class ChromeRenderer:
                 f"--user-data-dir={profile}",
                 f"--print-to-pdf={destination}",
                 "--no-pdf-header-footer",
-                url,
+                *extra_args,
+                target,
             ]
             try:
                 completed = subprocess.run(
@@ -246,15 +254,57 @@ class ChromeRenderer:
                 )
             except (OSError, subprocess.TimeoutExpired) as exc:
                 raise TransientArchiveError(
-                    f"Chrome failed while rendering {url}: {exc}"
+                    f"Chrome failed while rendering {target}: {exc}"
                 ) from exc
         if completed.returncode != 0:
             detail = completed.stderr.strip().splitlines()
             suffix = f": {detail[-1]}" if detail else ""
             raise TransientArchiveError(
-                f"Chrome exited {completed.returncode} while rendering {url}{suffix}"
+                f"Chrome exited {completed.returncode} while rendering {target}{suffix}"
             )
         validate_file(destination, ".pdf")
+
+    def render(self, url: str, destination: Path) -> None:
+        validate_https_url(url)
+        self._render_target(url, destination)
+
+    def render_marp(
+        self,
+        url: str,
+        document: bytes,
+        destination: Path,
+    ) -> None:
+        """Render Marp HTML without repeating its animated lead background."""
+        validate_https_url(url)
+        try:
+            source = document.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise PermanentArchiveError("Marp deck is not UTF-8 HTML") from exc
+        head = re.search(r"<head(?:\s[^>]*)?>", source, re.IGNORECASE)
+        if head is None:
+            raise PermanentArchiveError("Marp deck does not contain an HTML head")
+        injection = f"""
+<base href="{html.escape(url, quote=True)}">
+<style>
+@media print {{
+  body > div[style*="position: fixed"][style*="z-index: 0"] {{
+    display: none !important;
+  }}
+  section.lead {{
+    background: var(--heading, #062873) !important;
+  }}
+}}
+</style>
+"""
+        printable = source[: head.end()] + injection + source[head.end() :]
+        with tempfile.TemporaryDirectory(prefix="breakout-marp-") as directory:
+            source_path = Path(directory) / "deck.html"
+            source_path.write_text(printable, encoding="utf-8")
+            self._render_target(
+                source_path.as_uri(),
+                destination,
+                extra_args=("--allow-file-access-from-files",),
+            )
 
 
 def validate_https_url(url: str) -> None:
@@ -800,11 +850,21 @@ def archive_presentation(
         )
 
     try:
-        if kind == "web-pdf":
+        if kind in {"marp-web-pdf", "web-pdf"}:
             # Fail on HTTP status before Chrome can turn an error page into a PDF.
-            client.get(presentation.url, accept="text/html,application/xhtml+xml")
+            response = client.get(
+                presentation.url,
+                accept="text/html,application/xhtml+xml",
+            )
             filename = choose_filename(presentation, index, ".pdf")
-            chrome.render(presentation.url, destination / filename)
+            if kind == "marp-web-pdf":
+                chrome.render_marp(
+                    presentation.url,
+                    response.data,
+                    destination / filename,
+                )
+            else:
+                chrome.render(presentation.url, destination / filename)
             return ArchivedPresentation(
                 presentation=presentation,
                 filename=filename,
