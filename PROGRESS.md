@@ -93,6 +93,7 @@ The case for that, and the open questions around it, live in [ACD.md](ACD.md). T
 
 | Call | Date | Resources |
 | ---: | --- | --- |
+| 8 | September 9, 2026 | [Recording & notes](https://forkcast.org/calls/zkevm/008/) · [Slides](breakout-calls/008/) |
 | 7 | August 12, 2026 | [Recording & notes](https://forkcast.org/calls/zkevm/007) · [Slides](breakout-calls/007/) |
 | 6 | July 8, 2026 | [Recording & notes](https://forkcast.org/calls/zkevm/006) · [Slides](breakout-calls/006/) |
 | 5 | June 10, 2026 | [Recording & notes](https://forkcast.org/calls/zkevm/005) · [Slides](breakout-calls/005/) |
