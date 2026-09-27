@@ -25,6 +25,11 @@ EIP-8025 was [PFIed in ACD #178 (May 14, 2026)](https://www.youtube.com/watch?t=
 
 ## Blocked on CFI
 
+These items are waiting only for EIP-8025 to be Considered for Inclusion (CFI):
+
+- Move the [execution-witness dashboard](https://eth-act.github.io/eest-execution-witness-dashboard/) into official Hive.
+- Switch witness-generation test runs to the SSZ Engine API.
+
 ## Execution layer: specifications and tests
 
 - **Specifications:** Defined in [`execution-specs@projects/zkevm`](https://github.com/ethereum/execution-specs/tree/projects/zkevm), open upstream as [`execution-specs#2268`](https://github.com/ethereum/execution-specs/pull/2268) against `forks/amsterdam`.
@@ -67,16 +72,21 @@ EIP-8025 was [PFIed in ACD #178 (May 14, 2026)](https://www.youtube.com/watch?t=
 
     </details>
 
-  - zkEVM benchmark fixture releases started with [`tests-zkevm-benchmark@v0.8.2`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm-benchmark%40v0.8.2) (August 18, 2026): Amsterdam compute benchmarks at 10M, 30M, and 60M gas, tagged on the same commit as `tests-zkevm@v0.8.2`.
-  - Formal verification of guest-program ELFs: assessment criteria not yet defined.
+- **Testing:** Integrated into the Ethereum Execution Spec Tests (EEST) framework (e.g. `t8n` changes, testing framework capabilities, and fixture format adjustments).
 
-- **Testing:**
-  - Integrated into the Ethereum Execution Spec Tests (EEST) framework (e.g. `t8n` changes, testing framework capabilities, and fixture format adjustments).
-  - [Hive dashboard](https://eth-act.github.io/eest-execution-witness-dashboard/) for stateful ELs and guest program compliance against EEST tests (runs `tests-zkevm@v0.8.4` as of 2026-09-27).
-
-- **Documentation:** [Guest program handbook](https://github.com/eth-act/zkevm-standards/blob/main/handbooks/guest-handbook.md).
+- **Benchmarks** (as of 2026-09-27):
+  - Stateless benchmark releases: done. They started with [`tests-zkevm-benchmark@v0.8.2`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm-benchmark%40v0.8.2) (August 18, 2026): Amsterdam compute benchmarks at 10M, 30M, and 60M gas, tagged on the same commit as `tests-zkevm@v0.8.2`.
+  - Stateful benchmark releases: not started. The plan is to integrate them into STEEL's existing stateful filling infrastructure.
 
 ## Execution layer: clients
+
+Counts are as of 2026-09-27, out of 7 EL clients: Besu, Erigon, Ethrex, Geth, Nethermind, Nimbus, and Reth.
+
+- **Execution-witness dashboard:** 4/7 done, 2/7 partial. The [Hive dashboard](https://eth-act.github.io/eest-execution-witness-dashboard/) runs EEST fixtures (`tests-zkevm@v0.8.4` as of 2026-09-27) against each client's execution-witness generation.
+- **`engine_newPayloadWithWitness{V4,V5}`:** 3/7 done, 3/7 partial.
+- **`debug_executionWitness`:** 0/7 conformant with the proposed spec, 5/7 partial. Spec: open draft [`execution-apis#847`](https://github.com/ethereum/execution-apis/pull/847).
+- **REST+SSZ `POST /engine/v1/payloads/witness`:** 1/7 partial. Spec: open [`execution-apis#885`](https://github.com/ethereum/execution-apis/pull/885).
+- **Block building with witness** (getPayload, both JSON-RPC and REST+SSZ): waiting for a spec.
 
 ## Consensus layer: specifications
 
@@ -84,23 +94,54 @@ EIP-8025 was [PFIed in ACD #178 (May 14, 2026)](https://www.youtube.com/watch?t=
   - Proof-generating mode requests proofs and broadcasts them on the `execution_proof` gossip topic.
   - Proof-verifying mode consumes gossiped proofs and verifies them statelessly.
   - Includes the `ProofEngine` interface, proof gossip, request/response synchronization, and `eproof` Ethereum Node Record (ENR) discovery.
-  - Open draft [`consensus-specs#5639`](https://github.com/ethereum/consensus-specs/pull/5639) would make the `ProofEngine` validation-only and remove the proof-generation interfaces, leaving proof production to middleware outside the specification (not merged as of 2026-09-27).
+  - The spec tests stay in master: [`consensus-specs#5622`](https://github.com/ethereum/consensus-specs/pull/5622), which proposed removing them until CFI, was closed without merging on 2026-09-24.
+- **Tracking issue:** [`consensus-specs#5653`](https://github.com/ethereum/consensus-specs/issues/5653).
+- **Open follow-ups** (as of 2026-09-27):
+  - [`consensus-specs#5593`](https://github.com/ethereum/consensus-specs/pull/5593): refine `ProofData` and gossip validation. Ready for review.
+  - [`consensus-specs#5639`](https://github.com/ethereum/consensus-specs/pull/5639): make the `ProofEngine` validation-only and remove the proof-generation interfaces, leaving proof production to middleware outside the specification. Draft; depends on #5593.
+  - [`consensus-specs#5534`](https://github.com/ethereum/consensus-specs/pull/5534): recursive execution proof guest. Draft.
+  - [`beacon-APIs#569`](https://github.com/ethereum/beacon-APIs/pull/569): Beacon API endpoints for proof retrieval and submission.
 
 ## Consensus layer: clients
 
-- **Client implementations (Glamsterdam):** [`eth-act/lighthouse@optional-proofs-gloas`](https://github.com/eth-act/lighthouse/tree/optional-proofs-gloas) and [`OffchainLabs/prysm@eip8025-optional-proofs`](https://github.com/OffchainLabs/prysm/tree/eip8025-optional-proofs) (work-in-progress draft [`prysm#17490`](https://github.com/OffchainLabs/prysm/pull/17490)).
+Counts are as of 2026-09-27, out of 6 CL clients: Grandine, Lighthouse, Lodestar, Nimbus, Prysm, and Teku.
+
+- **Implementation on Glamsterdam:** 1/6 done, 2/6 partial.
+  - Lighthouse: [`eth-act/lighthouse@optional-proofs-gloas`](https://github.com/eth-act/lighthouse/tree/optional-proofs-gloas).
+  - Prysm: [`OffchainLabs/prysm@eip8025-optional-proofs`](https://github.com/OffchainLabs/prysm/tree/eip8025-optional-proofs), with work-in-progress draft [`prysm#17490`](https://github.com/OffchainLabs/prysm/pull/17490).
+  - Grandine: [`eip8025-grandine/grandine@feature/eip8025`](https://github.com/eip8025-grandine/grandine/tree/feature/eip8025).
+  - Prototypes in Teku ([`Consensys/teku@optional-proofs`](https://github.com/Consensys/teku/tree/optional-proofs)), Nimbus (draft [`nimbus-eth2#8004`](https://github.com/status-im/nimbus-eth2/pull/8004)), and Lodestar ([`ChainSafe/lodestar@optional-proofs`](https://github.com/ChainSafe/lodestar/tree/optional-proofs)).
+- **[zkboost](https://github.com/eth-act/zkboost) integration:** 1/6 done, 1/6 partial.
+- **Kurtosis integration:** 2/6, through the zkboost support in [`ethpandaops/ethereum-package`](https://github.com/ethpandaops/ethereum-package/tree/main/src/zkboost).
 - **Testing:**
-  - Fulu: Kurtosis devnet with mocked and real proofs working, using the earlier Fulu-based `optional-proofs` branches of both clients.
+  - Fulu: Kurtosis devnet with mocked and real proofs working, using the earlier Fulu-based `optional-proofs` branches of Lighthouse and Prysm.
   - Glamsterdam: in progress. Prysm on Gloas still runs with mocked proofs and a zkboost fork.
 
 ## Guest programs
 
+Counts are as of 2026-09-27, out of 6 guest programs: Ethrex, evm-asm, Nethermind, Nimbus, Reth, and Zesu. They are assessed against the [guest program handbook](https://github.com/eth-act/zkevm-standards/blob/main/handbooks/guest-handbook.md#guest-program-rubric) rubric.
+
+- **ELF builds via public, fully open-source CI:** 6/6.
+- **RISC-V target:** 5/6.
+- **MIT + Apache 2.0 dual licensing:** 4/6.
+- **Signed ELF and verification-key release assets:** 2/6 done, 3/6 partial.
+- **EEST tests passing across zkVMs:** 1/6 done, 2/6 partial, on the [Hive dashboard](https://eth-act.github.io/eest-execution-witness-dashboard/) (`tests-zkevm@v0.8.4` as of 2026-09-27).
+- **zkevm-standards interfaces** (I/O, accelerator C interface, memory operations, entry point and linking, ELF compliance, exit codes): mostly not yet assessed.
+- **Formal verification of guest-program ELFs:** assessment criteria not yet defined.
+
 ## zkVMs
 
-- [zkVM handbook](https://github.com/eth-act/zkevm-standards/blob/main/handbooks/zkvm-handbook.md).
-- [`eth-act/zkevm-standards`](https://github.com/eth-act/zkevm-standards).
-- **Testing:** The [RISC-V Compliance Test Monitor](https://eth-act.github.io/zkevm-test-monitor/) publishes ISA compliance results for supported zkVMs ([source repository](https://github.com/eth-act/zkevm-test-monitor)).
-- Formal verification of zkVM circuits: assessment criteria not yet defined.
+Counts are as of 2026-09-27, out of 4 zkVMs: lambda-vm, OpenVM, SP1, and ZisK. They are assessed against the [zkVM handbook](https://github.com/eth-act/zkevm-standards/blob/main/handbooks/zkvm-handbook.md#zkvm-rubric) rubric.
+
+- **MIT + Apache 2.0 dual licensing:** 4/4.
+- **Deterministic program verification-key generation:** 3/4.
+- **RISC-V target:** 2/4 done, 1/4 partial. The [RISC-V Compliance Test Monitor](https://eth-act.github.io/zkevm-test-monitor/) publishes ISA compliance results for supported zkVMs ([source repository](https://github.com/eth-act/zkevm-test-monitor)).
+- **ELF loading and validation, execution termination semantics:** partial on 4/4.
+- **Cluster-mode support documented:** 2/4.
+- **Final proof size ≤300 KiB:** not yet established on any.
+- **EF cryptography review:** delayed.
+- **Circuit formal verification, real-time proving on the EF reference cluster:** assessment criteria not yet defined.
+- **Standards pipeline:** 6 proposals open in [`eth-act/zkevm-standards`](https://github.com/eth-act/zkevm-standards/pulls) and [9 open issues](https://github.com/eth-act/zkevm-standards/issues?q=is%3Aissue%20is%3Aopen), as of 2026-09-27. The proposals are host randomness ([#42](https://github.com/eth-act/zkevm-standards/pull/42)), proving cost estimation ([#36](https://github.com/eth-act/zkevm-standards/pull/36)), a logging function ([#27](https://github.com/eth-act/zkevm-standards/pull/27)), the Keccak-f[1600] permutation ([#26](https://github.com/eth-act/zkevm-standards/pull/26)), a U256 interface ([#22](https://github.com/eth-act/zkevm-standards/pull/22)), and minimum memory resources ([#20](https://github.com/eth-act/zkevm-standards/pull/20)).
 
 ## Infrastructure and tooling
 
@@ -115,8 +156,18 @@ EIP-8025 was [PFIed in ACD #178 (May 14, 2026)](https://www.youtube.com/watch?t=
   - Stateless-input artifacts allowing EIP-8025 proving on Glamsterdam devnets:
     - [R2 bucket for `glamsterdam-devnet-5` stateless inputs](https://pub-5345007fbd06486bbb7cbbe9f3112c45.r2.dev/devnets/glamsterdam-devnet-5/index.html)
     - [R2 bucket for `glamsterdam-devnet-7` stateless inputs](https://pub-df22334654034ebab51bc096137a59d8.r2.dev/devnets/glamsterdam-devnet-7/index.html)
+    - [R2 bucket for `glamsterdam-devnet-8` stateless inputs](https://pub-760ad8b3dd9547539f829c1ea30f18b5.r2.dev/devnets/glamsterdam-devnet-8/index.html)
 
 ## Benchmarks and repricing
+
+- **Done:**
+  - Research on available proving time: [proving-time scenarios](https://jsign.github.io/proving-time-scenarios/).
+  - Benchmark fixture releases: see [Execution layer: specifications and tests](#execution-layer-specifications-and-tests).
+- **Pending** (as of 2026-09-27):
+  - Comparison tables by zkVM and guest program, for mainnet blocks and for EEST worst cases, possibly using [zkevm-prof](https://han0110.github.io/zkevm-prof/) data.
+  - Gas repricing analysis for the worst cases, using [`evm-gasfit`](https://github.com/jsign/evm-gasfit).
+  - The gas limit at which serial execution uses up the available proving time for each zkVM, which is when sub-block proving becomes necessary.
+  - A correctness campaign across historical mainnet blocks: generate witnesses for older forks and validate guest programs on a large historical block set.
 
 ## Coordination: zkEVM breakout calls
 
