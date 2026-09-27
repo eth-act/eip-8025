@@ -79,14 +79,14 @@ Although we believe most of the work is in good shape, calling it cost-free woul
 
 | Workstream | Existing work | Hegotá remaining work |
 | --- | --- | --- |
-| Execution specifications | EL specifications, conformance tests, and maintained zkEVM test releases, open as [`execution-specs#2268`](https://github.com/ethereum/execution-specs/pull/2268) | Prepare, review, split, and upstream ~16k existing lines; rebase from `forks/amsterdam` and keep them aligned with the fork |
+| Execution specifications | EL specifications, conformance tests, and maintained zkEVM test releases, open as [`execution-specs#2268`](https://github.com/ethereum/execution-specs/pull/2268) | Prepare, review, split, and upstream ~17k existing lines; rebase from `forks/amsterdam` and keep them aligned with the fork |
 | Consensus specifications | Feature specifications and tests merged in `consensus-specs` master | Maintain fork alignment, pin open parameters |
 | EL clients | Witness-construction changes upstreamed in most stateful clients | Complete and harden witness-construction coverage; keep it aligned as the fork's STF settles |
 | CL clients | Lighthouse and Prysm, with interoperability demonstrated on Fulu and in progress on Glamsterdam | Upstream and harden both and remaining clients, and complete cross-client testing |
 | Infrastructure and proving | Proving, Kurtosis support, observability, and testing infrastructure in active use | Production runbooks, metrics, and integration into existing ecosystem tools |
 | Security, zkVMs, and documentation | zkVM standards, published ISA-compliance results, and cross-zkVM benchmarking of guest programs | Expand testing and formal verification coverage, refine security analysis, and add more documentation |
 
-Most of the ~16k-line `execution-specs` diff does not modify the current state-transition function. It builds the architecture and testing support that stateless validation needs:
+Most of the ~17k-line `execution-specs` diff does not modify the current state-transition function. It builds the architecture and testing support that stateless validation needs:
 
 - new `t8n` parameters for stateless-execution artifacts (`executionWitness`, `statelessInputBytes`, `statelessOutputBytes`)
 - testing-framework constructs such as execution-witness mutators and other coverage support

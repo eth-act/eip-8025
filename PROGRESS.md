@@ -25,7 +25,7 @@ EIP-8025 was [PFIed in ACD #178 (May 14, 2026)](https://www.youtube.com/watch?t=
 
 ## Blocked on CFI
 
-These items are waiting only for EIP-8025 to be Considered for Inclusion (CFI):
+As of 2026-09-27, these items are waiting only for EIP-8025 to be Considered for Inclusion (CFI):
 
 - Move the [execution-witness dashboard](https://eth-act.github.io/eest-execution-witness-dashboard/) into official Hive.
 - Switch witness-generation test runs to the SSZ Engine API.
@@ -72,7 +72,7 @@ These items are waiting only for EIP-8025 to be Considered for Inclusion (CFI):
 
     </details>
 
-- **Testing:** Integrated into the Ethereum Execution Spec Tests (EEST) framework (e.g. `t8n` changes, testing framework capabilities, and fixture format adjustments).
+- **Testing:** Integrated into the Ethereum Execution Spec Tests (EEST) framework (e.g. `t8n` changes, testing framework capabilities, and fixture format adjustments), as part of [`execution-specs#2268`](https://github.com/ethereum/execution-specs/pull/2268).
 
 - **Benchmarks** (as of 2026-09-27):
   - Stateless benchmark releases: done. They started with [`tests-zkevm-benchmark@v0.8.2`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm-benchmark%40v0.8.2) (August 18, 2026): Amsterdam compute benchmarks at 10M, 30M, and 60M gas, tagged on the same commit as `tests-zkevm@v0.8.2`.
@@ -115,7 +115,7 @@ Counts are as of 2026-09-27, out of 6 CL clients: Grandine, Lighthouse, Lodestar
 - **Kurtosis integration:** 2/6, through the zkboost support in [`ethpandaops/ethereum-package`](https://github.com/ethpandaops/ethereum-package/tree/main/src/zkboost).
 - **Testing:**
   - Fulu: Kurtosis devnet with mocked and real proofs working, using the earlier Fulu-based `optional-proofs` branches of Lighthouse and Prysm.
-  - Glamsterdam: in progress. Prysm on Gloas still runs with mocked proofs and a zkboost fork.
+  - Glamsterdam: in progress as of 2026-09-27. Prysm on Gloas still runs with mocked proofs and a zkboost fork.
 
 ## Guest programs
 
