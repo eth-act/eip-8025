@@ -15,47 +15,49 @@ Readiness work is organized into four technical workstreams:
 
 ## ACD progress
 
-EIP-8025 was [PFIed in ACD #178 (May 14, 2026)](https://www.youtube.com/watch?t=4147&v=tZIY3IybQh4). The next step is proposing to CFI it.
-
-The case for that, and the open questions around it, live in [ACD.md](ACD.md). This document is the readiness register.
+EIP-8025 was [PFIed in ACD #178 (May 14, 2026)](https://www.youtube.com/watch?t=4147&v=tZIY3IybQh4); the case for CFI, and the open questions around it, are in [ACD.md](ACD.md).
 
 ## Execution layer
 
 - **Specifications:** Defined in [`execution-specs@projects/zkevm`](https://github.com/ethereum/execution-specs/tree/projects/zkevm), open upstream as [`execution-specs#2268`](https://github.com/ethereum/execution-specs/pull/2268) against `forks/amsterdam`.
   - Stateful execution layer (EL) specifications for guest program input generation.
   - End-to-end guest program specifications.
-  - zkEVM test releases have been published and maintained since April 2025, initially in `execution-spec-tests` and now in `execution-specs` (newest first):
-    - Current [`ethereum/execution-specs`](https://github.com/ethereum/execution-specs/releases) `tests-zkevm@` series:
+  - zkEVM test releases have been published and maintained since April 2025, initially in `execution-spec-tests` and now in `execution-specs`. The latest is [`tests-zkevm@v21.0.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v21.0.0) (September 24, 2026), based on [`tests@v21.0.0`](https://github.com/ethereum/execution-specs/releases/tag/tests%40v21.0.0) (Glamsterdam on Sepolia). Starting with this release, `tests-zkevm@` version numbers follow the upstream `tests@` release they are based on.
 
-      | Release | Based on |
-      | --- | --- |
-      | [`tests-zkevm@v21.0.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v21.0.0) | [`tests@v21.0.0`](https://github.com/ethereum/execution-specs/releases/tag/tests%40v21.0.0) (Glamsterdam on Sepolia) |
-      | [`tests-zkevm@v0.8.4`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.4) | `glamsterdam-devnet-8` ([`tests-glamsterdam-devnet@v8.1.4`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.4)) |
-      | [`tests-zkevm@v0.8.3`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.3) | `glamsterdam-devnet-8` ([`tests-glamsterdam-devnet@v8.1.3`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.3)) |
-      | [`tests-zkevm@v0.8.2`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.2) | `glamsterdam-devnet-8` ([`tests-glamsterdam-devnet@v8.1.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0)) |
-      | [`tests-zkevm@v0.8.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.0) | `glamsterdam-devnet-8` ([`tests-glamsterdam-devnet@v8.1.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0)) |
-      | [`tests-zkevm@v0.6.2`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.6.2) | `glamsterdam-devnet-7` |
-      | [`tests-zkevm@v0.6.1`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.6.1) | `glamsterdam-devnet-7` |
-      | [`tests-zkevm@v0.6.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.6.0) | `glamsterdam-devnet-7` |
-      | [`tests-zkevm@v0.5.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.5.0) | `glamsterdam-devnet-6` |
-      | [`tests-zkevm@v0.4.1`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.4.1) | `bal-devnet-7` |
+    <details>
+    <summary>Release history (newest first)</summary>
 
-      Starting with `v21.0.0` (September 24, 2026), `tests-zkevm@` version numbers follow the upstream `tests@` release they are based on.
+    Current [`ethereum/execution-specs`](https://github.com/ethereum/execution-specs/releases) `tests-zkevm@` series:
 
-    - Original [`ethereum/execution-spec-tests`](https://github.com/ethereum/execution-spec-tests/releases) `zkevm@` series:
+    | Release | Based on |
+    | --- | --- |
+    | [`tests-zkevm@v21.0.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v21.0.0) | [`tests@v21.0.0`](https://github.com/ethereum/execution-specs/releases/tag/tests%40v21.0.0) (Glamsterdam on Sepolia) |
+    | [`tests-zkevm@v0.8.4`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.4) | `glamsterdam-devnet-8` ([`tests-glamsterdam-devnet@v8.1.4`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.4)) |
+    | [`tests-zkevm@v0.8.3`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.3) | `glamsterdam-devnet-8` ([`tests-glamsterdam-devnet@v8.1.3`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.3)) |
+    | [`tests-zkevm@v0.8.2`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.2) | `glamsterdam-devnet-8` ([`tests-glamsterdam-devnet@v8.1.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0)) |
+    | [`tests-zkevm@v0.8.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.0) | `glamsterdam-devnet-8` ([`tests-glamsterdam-devnet@v8.1.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0)) |
+    | [`tests-zkevm@v0.6.2`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.6.2) | `glamsterdam-devnet-7` |
+    | [`tests-zkevm@v0.6.1`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.6.1) | `glamsterdam-devnet-7` |
+    | [`tests-zkevm@v0.6.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.6.0) | `glamsterdam-devnet-7` |
+    | [`tests-zkevm@v0.5.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.5.0) | `glamsterdam-devnet-6` |
+    | [`tests-zkevm@v0.4.1`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.4.1) | `bal-devnet-7` |
 
-      | Release | Based on |
-      | --- | --- |
-      | [`zkevm@v0.4.0`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.4.0) | `bal-devnet-7` |
-      | [`zkevm@v0.3.4`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.3.4) | `bal-devnet-3` |
-      | [`zkevm@v0.3.3`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.3.3) | `bal-devnet-3` |
-      | [`zkevm@v0.3.2`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.3.2) | `bal-devnet-3` |
-      | [`zkevm@v0.3.1`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.3.1) | `bal-devnet-3` |
-      | [`zkevm@v0.3.0`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.3.0) | `bal-devnet-3` |
-      | [`zkevm@v0.2.0`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.2.0) | — |
-      | [`zkevm@v0.1.0`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.1.0) | — |
-      | [`zkevm@v0.0.2`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.0.2) | — |
-      | [`zkevm@v0.0.1`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.0.1) | — |
+    Original [`ethereum/execution-spec-tests`](https://github.com/ethereum/execution-spec-tests/releases) `zkevm@` series:
+
+    | Release | Based on |
+    | --- | --- |
+    | [`zkevm@v0.4.0`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.4.0) | `bal-devnet-7` |
+    | [`zkevm@v0.3.4`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.3.4) | `bal-devnet-3` |
+    | [`zkevm@v0.3.3`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.3.3) | `bal-devnet-3` |
+    | [`zkevm@v0.3.2`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.3.2) | `bal-devnet-3` |
+    | [`zkevm@v0.3.1`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.3.1) | `bal-devnet-3` |
+    | [`zkevm@v0.3.0`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.3.0) | `bal-devnet-3` |
+    | [`zkevm@v0.2.0`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.2.0) | — |
+    | [`zkevm@v0.1.0`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.1.0) | — |
+    | [`zkevm@v0.0.2`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.0.2) | — |
+    | [`zkevm@v0.0.1`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.0.1) | — |
+
+    </details>
 
   - zkEVM benchmark fixture releases started with [`tests-zkevm-benchmark@v0.8.2`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm-benchmark%40v0.8.2) (August 18, 2026): Amsterdam compute benchmarks at 10M, 30M, and 60M gas, tagged on the same commit as `tests-zkevm@v0.8.2`.
   - Formal verification of guest-program ELFs: assessment criteria not yet defined.
@@ -115,9 +117,3 @@ The case for that, and the open questions around it, live in [ACD.md](ACD.md). T
 ## Further reading
 
 For technical deep dives on EIP-8025, zkVM performance, interoperability standards, and security, see the [zkEVM Team blog](https://zkevm.ethereum.foundation/blog).
-
-
-## Appendix
-
-Hive-dashboard screenshot:
-![Hive dashboard screenshot](assets/hive-dashboard-screenshot.png)
