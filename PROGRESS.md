@@ -9,7 +9,7 @@ Readiness work is organized into four technical workstreams:
 | Workstream | Status |
 | --- | --- |
 | Execution layer | **Implemented and tested; maintenance and improvements in progress; upstreaming once considered for inclusion** |
-| Consensus layer | **Specifications merged upstream; clients implemented and interoperability tested; maintenance and improvements in progress; client upstreaming once considered for inclusion** |
+| Consensus layer | **Specifications merged upstream; clients implemented and interoperability tested on Fulu (Glamsterdam in progress); maintenance and improvements in progress; client upstreaming once considered for inclusion** |
 | zkVMs | **Rubric and standards implementation in progress** |
 | Infrastructure and tooling | **Implemented; maintenance and improvements in progress; upstreaming once considered for inclusion** |
 
@@ -29,12 +29,18 @@ The case for that, and the open questions around it, live in [ACD.md](ACD.md). T
 
       | Release | Based on |
       | --- | --- |
-      | [`tests-zkevm@v0.8.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.0) | `glamsterdam-devnet-8` |
+      | [`tests-zkevm@v21.0.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v21.0.0) | [`tests@v21.0.0`](https://github.com/ethereum/execution-specs/releases/tag/tests%40v21.0.0) (Glamsterdam on Sepolia) |
+      | [`tests-zkevm@v0.8.4`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.4) | `glamsterdam-devnet-8` ([`tests-glamsterdam-devnet@v8.1.4`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.4)) |
+      | [`tests-zkevm@v0.8.3`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.3) | `glamsterdam-devnet-8` ([`tests-glamsterdam-devnet@v8.1.3`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.3)) |
+      | [`tests-zkevm@v0.8.2`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.2) | `glamsterdam-devnet-8` ([`tests-glamsterdam-devnet@v8.1.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0)) |
+      | [`tests-zkevm@v0.8.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.8.0) | `glamsterdam-devnet-8` ([`tests-glamsterdam-devnet@v8.1.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0)) |
       | [`tests-zkevm@v0.6.2`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.6.2) | `glamsterdam-devnet-7` |
       | [`tests-zkevm@v0.6.1`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.6.1) | `glamsterdam-devnet-7` |
       | [`tests-zkevm@v0.6.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.6.0) | `glamsterdam-devnet-7` |
       | [`tests-zkevm@v0.5.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.5.0) | `glamsterdam-devnet-6` |
       | [`tests-zkevm@v0.4.1`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm%40v0.4.1) | `bal-devnet-7` |
+
+      Starting with `v21.0.0` (September 24, 2026), `tests-zkevm@` version numbers follow the upstream `tests@` release they are based on.
 
     - Original [`ethereum/execution-spec-tests`](https://github.com/ethereum/execution-spec-tests/releases) `zkevm@` series:
 
@@ -51,11 +57,12 @@ The case for that, and the open questions around it, live in [ACD.md](ACD.md). T
       | [`zkevm@v0.0.2`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.0.2) | — |
       | [`zkevm@v0.0.1`](https://github.com/ethereum/execution-spec-tests/releases/tag/zkevm%40v0.0.1) | — |
 
-  - Formal verification (Planned!).
+  - zkEVM benchmark fixture releases started with [`tests-zkevm-benchmark@v0.8.2`](https://github.com/ethereum/execution-specs/releases/tag/tests-zkevm-benchmark%40v0.8.2) (August 18, 2026): Amsterdam compute benchmarks at 10M, 30M, and 60M gas, tagged on the same commit as `tests-zkevm@v0.8.2`.
+  - Formal verification of guest-program ELFs: assessment criteria not yet defined.
 
 - **Testing:**
   - Integrated into the Ethereum Execution Spec Tests (EEST) framework (e.g. `t8n` changes, testing framework capabilities, and fixture format adjustments).
-  - [Hive dashboard](https://eth-act.github.io/eest-execution-witness-dashboard/#/group/tests-zkevm%20v0.6.2) for stateful ELs and guest program compliance against EEST tests.
+  - [Hive dashboard](https://eth-act.github.io/eest-execution-witness-dashboard/) for stateful ELs and guest program compliance against EEST tests (runs `tests-zkevm@v0.8.4` as of 2026-09-27).
 
 - **Documentation:** [Guest program handbook](https://github.com/eth-act/zkevm-standards/blob/main/handbooks/guest-handbook.md).
 
@@ -65,15 +72,18 @@ The case for that, and the open questions around it, live in [ACD.md](ACD.md). T
   - Proof-generating mode requests proofs and broadcasts them on the `execution_proof` gossip topic.
   - Proof-verifying mode consumes gossiped proofs and verifies them statelessly.
   - Includes the `ProofEngine` interface, proof gossip, request/response synchronization, and `eproof` Ethereum Node Record (ENR) discovery.
-- **Client implementations:** [`eth-act/lighthouse@optional-proofs`](https://github.com/eth-act/lighthouse/tree/optional-proofs) and [`OffchainLabs/prysm@optional-proofs`](https://github.com/OffchainLabs/prysm/tree/optional-proofs) (Fulu-based).
-- **Testing:** Kurtosis devnet with mocked and real proofs working (Fulu-based).
+  - Open draft [`consensus-specs#5639`](https://github.com/ethereum/consensus-specs/pull/5639) would make the `ProofEngine` validation-only and remove the proof-generation interfaces, leaving proof production to middleware outside the specification (not merged as of 2026-09-27).
+- **Client implementations (Glamsterdam):** [`eth-act/lighthouse@optional-proofs-gloas`](https://github.com/eth-act/lighthouse/tree/optional-proofs-gloas) and [`OffchainLabs/prysm@eip8025-optional-proofs`](https://github.com/OffchainLabs/prysm/tree/eip8025-optional-proofs) (work-in-progress draft [`prysm#17490`](https://github.com/OffchainLabs/prysm/pull/17490)).
+- **Testing:**
+  - Fulu: Kurtosis devnet with mocked and real proofs working, using the earlier Fulu-based `optional-proofs` branches of both clients.
+  - Glamsterdam: in progress. Prysm on Gloas still runs with mocked proofs and a zkboost fork.
 
 ## zkVMs
 
 - [zkVM handbook](https://github.com/eth-act/zkevm-standards/blob/main/handbooks/zkvm-handbook.md).
 - [`eth-act/zkevm-standards`](https://github.com/eth-act/zkevm-standards).
 - **Testing:** The [RISC-V Compliance Test Monitor](https://eth-act.github.io/zkevm-test-monitor/) publishes ISA compliance results for supported zkVMs ([source repository](https://github.com/eth-act/zkevm-test-monitor)).
-- Formal verification progress (Planned!).
+- Formal verification of zkVM circuits: assessment criteria not yet defined.
 
 ## Infrastructure and tooling
 
@@ -93,7 +103,7 @@ The case for that, and the open questions around it, live in [ACD.md](ACD.md). T
 
 | Call | Date | Resources |
 | ---: | --- | --- |
-| 8 | September 9, 2026 | [Recording & notes](https://forkcast.org/calls/zkevm/008/) · [Slides](breakout-calls/008/) |
+| 8 | September 9, 2026 | [Recording & notes](https://forkcast.org/calls/zkevm/008) · [Slides](breakout-calls/008/) |
 | 7 | August 12, 2026 | [Recording & notes](https://forkcast.org/calls/zkevm/007) · [Slides](breakout-calls/007/) |
 | 6 | July 8, 2026 | [Recording & notes](https://forkcast.org/calls/zkevm/006) · [Slides](breakout-calls/006/) |
 | 5 | June 10, 2026 | [Recording & notes](https://forkcast.org/calls/zkevm/005) · [Slides](breakout-calls/005/) |
