@@ -9,7 +9,7 @@ We believe execution proofs are likely to become important as Ethereum scales: t
 We believe five things make EIP-8025 worth doing in Hegotá:
 
 - It front-runs the engineering that mandatory proofs would need while leaving the cryptography open: the parts that are reusable across proving systems get built and exercised now, and no zkVM or proving system is selected.
-- Most of the work already exists, which bounds the cost. EL and CL specifications, two interoperating CL clients, witness construction upstreamed in most stateful ELs, and proving infrastructure in active use on Glamsterdam devnets.
+- Most of the work already exists, which bounds the cost. EL and CL specifications, two CL clients that interoperated on Fulu, witness construction upstreamed in most stateful ELs, and proving infrastructure in active use on Glamsterdam devnets.
 - Nothing in EIP-8025 is consensus-critical, so it can be dropped at any point if it gets in the way of fork delivery. It cannot delay the fork.
 - It would collect metrics and give pandaops and engineering teams operational experience on mainnet, supporting a smooth, de-risked transition to mandatory proofs.
 - It would leave the protocol prepared integrating other big upcoming protocol changes i.e. new state tree in I*.
@@ -37,7 +37,7 @@ We believe the work completed so far justifies proposing EIP-8025 for CFI in Heg
 | --- | --- |
 | Proposed for Inclusion, and reviewed by client developers | Presented at ACDC #178 on May 14, 2026 |
 | A Python implementation with tests in `execution-specs`, submitted as an open PR (`SHOULD`) | [`execution-specs#2268`](https://github.com/ethereum/execution-specs/pull/2268) is open, carrying the guest program, stateless interfaces, host-side witness construction, and ~163 conformance tests, with `tests-zkevm@` releases maintained since April 2025. It is a draft, based on `forks/amsterdam`. |
-| Intent to attempt inclusion in devnets | Already rehearsed rather than intended: Kurtosis `ethereum-package` support, stateless-input artifacts for `glamsterdam-devnet-5` and `-7`, and Lighthouse and Prysm interoperating with a GPU prover. More details in the [readiness section](PROGRESS.md#summary). |
+| Intent to attempt inclusion in devnets | Already rehearsed rather than intended: Kurtosis `ethereum-package` support; stateless-input artifacts for `glamsterdam-devnet-5`, `-7`, and `-8`; and Lighthouse and Prysm interoperating with a GPU prover on Fulu, with Glamsterdam interop in progress. More details in the [readiness section](PROGRESS.md#summary). |
 | Updates at this stage accompanied by updates to implementation and tests (`SHOULD`) | Already the working for at least six months of rebases across Glamsterdam devnets, owned by the zkEVM team |
 
 The consensus-layer half went further than CFI asks: [`specs/_features/eip8025`](https://github.com/ethereum/consensus-specs/tree/master/specs/_features/eip8025) is merged in `consensus-specs` master. The work that remains is concentrated in `execution-specs`, mainly with the intention of upstreaming code.
@@ -60,7 +60,7 @@ The use of execution proofs to scale Ethereum has been under consideration [for 
 
 ### How ready is EIP-8025 to be included in Hegotá?
 
-Beyond the specifications, tests, and devnet exercise covered in the [eligibility table](#case-for-cfi-of-eip-8025), multiple stateful ELs have upstreamed witness-construction changes and pass most of the execution-witness tests ([Hive dashboard](https://eth-act.github.io/eest-execution-witness-dashboard/#/group/tests-zkevm%20v0.6.2)).
+Beyond the specifications, tests, and devnet exercise covered in the [eligibility table](#case-for-cfi-of-eip-8025), multiple stateful ELs have upstreamed witness-construction changes. As of 2026-09-27, 4 of the 7 tracked ELs are fully integrated with the execution-witness [Hive dashboard](https://eth-act.github.io/eest-execution-witness-dashboard/) and 2 partially; the dashboard runs the `tests-zkevm@v0.8.4` fixtures against each client's execution-witness generation.
 
 Twelve months of work across multiple teams and devnet iterations produced this. Per-workstream detail is in the [readiness register](PROGRESS.md).
 
@@ -82,7 +82,7 @@ Although we believe most of the work is in good shape, calling it cost-free woul
 | Execution specifications | EL specifications, conformance tests, and maintained zkEVM test releases, open as [`execution-specs#2268`](https://github.com/ethereum/execution-specs/pull/2268) | Prepare, review, split, and upstream ~16k existing lines; rebase from `forks/amsterdam` and keep them aligned with the fork |
 | Consensus specifications | Feature specifications and tests merged in `consensus-specs` master | Maintain fork alignment, pin open parameters |
 | EL clients | Witness-construction changes upstreamed in most stateful clients | Complete and harden witness-construction coverage; keep it aligned as the fork's STF settles |
-| CL clients | Lighthouse and Prysm, with demonstrated interoperability | Upstream and harden both and remaining clients, and complete cross-client testing |
+| CL clients | Lighthouse and Prysm, with interoperability demonstrated on Fulu and in progress on Glamsterdam | Upstream and harden both and remaining clients, and complete cross-client testing |
 | Infrastructure and proving | Proving, Kurtosis support, observability, and testing infrastructure in active use | Production runbooks, metrics, and integration into existing ecosystem tools |
 | Security, zkVMs, and documentation | zkVM standards, published ISA-compliance results, and cross-zkVM benchmarking of guest programs | Expand testing and formal verification coverage, refine security analysis, and add more documentation |
 
