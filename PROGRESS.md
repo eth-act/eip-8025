@@ -2,22 +2,30 @@
 
 This document is a single-page document that summarizes the current state of readiness for EIP-8025.
 
+Last updated: 2026-09-27
+
 ## Summary
 
-Readiness work is organized into four technical workstreams:
+Counts are as of 2026-09-27, out of 7 EL clients, 6 CL clients, 6 guest programs, and 4 zkVMs.
 
-| Workstream | Status |
-| --- | --- |
-| Execution layer | **Implemented and tested; maintenance and improvements in progress; upstreaming once considered for inclusion** |
-| Consensus layer | **Specifications merged upstream; clients implemented and interoperability tested on Fulu (Glamsterdam in progress); maintenance and improvements in progress; client upstreaming once considered for inclusion** |
-| zkVMs | **Rubric and standards implementation in progress** |
-| Infrastructure and tooling | **Implemented; maintenance and improvements in progress; upstreaming once considered for inclusion** |
+| Workstream | Status | Remaining before Hegotá | Primary sources |
+| --- | --- | --- | --- |
+| EL specs and tests | Open upstream as draft `execution-specs#2268`; latest `tests-zkevm@v21.0.0`; first benchmark fixtures released | Split, review, and upstream ~17k lines; rebase onto `forks/amsterdam` | [`execution-specs#2268`](https://github.com/ethereum/execution-specs/pull/2268), [releases](https://github.com/ethereum/execution-specs/releases) |
+| EL clients | Witness dashboard 4/7; `newPayloadWithWitness` 3/7 | Engine API witness endpoints; land `execution-apis#847` and `#885`; getPayload-with-witness spec | [Hive dashboard](https://eth-act.github.io/eest-execution-witness-dashboard/), [`execution-apis#847`](https://github.com/ethereum/execution-apis/pull/847), [`execution-apis#885`](https://github.com/ethereum/execution-apis/pull/885) |
+| CL specs | Merged in master; 4 follow-up PRs open (3 consensus-specs, 1 beacon-APIs) | [`#5593`](https://github.com/ethereum/consensus-specs/pull/5593) and [`#5639`](https://github.com/ethereum/consensus-specs/pull/5639) | [`consensus-specs#5653`](https://github.com/ethereum/consensus-specs/issues/5653) |
+| CL clients | Glamsterdam 1/6 done, 2/6 partial; Kurtosis 2/6 | Prysm with real proofs on Gloas; the other four clients | [Lighthouse](https://github.com/eth-act/lighthouse/tree/optional-proofs-gloas) and [Prysm](https://github.com/OffchainLabs/prysm/tree/eip8025-optional-proofs) branches, [`prysm#17490`](https://github.com/OffchainLabs/prysm/pull/17490) |
+| Guest programs | 6 tracked; EEST across zkVMs 1/6; open-source CI 6/6 | EEST coverage, signed ELF and VK releases, licensing | [Guest program handbook](https://github.com/eth-act/zkevm-standards/blob/main/handbooks/guest-handbook.md), [Hive dashboard](https://eth-act.github.io/eest-execution-witness-dashboard/) |
+| zkVMs | 4 tracked; RISC-V target 2/4; 6 standards proposed | Standards conformance, formal verification and real-time proving criteria, proof-size evidence | [zkVM handbook](https://github.com/eth-act/zkevm-standards/blob/main/handbooks/zkvm-handbook.md), [ISA monitor](https://eth-act.github.io/zkevm-test-monitor/), [`zkevm-standards`](https://github.com/eth-act/zkevm-standards) |
+| Infrastructure and tooling | Implemented and in use on Glamsterdam devnets | Runbooks, metrics, ecosystem integration | [Section below](#infrastructure-and-tooling) |
+| Benchmarks and repricing | Proving-time research done; benchmark fixtures released | Comparison tables, repricing, sub-block threshold, historical campaign | [Section below](#benchmarks-and-repricing) |
 
 ## ACD progress
 
 EIP-8025 was [PFIed in ACD #178 (May 14, 2026)](https://www.youtube.com/watch?t=4147&v=tZIY3IybQh4); the case for CFI, and the open questions around it, are in [ACD.md](ACD.md).
 
-## Execution layer
+## Blocked on CFI
+
+## Execution layer: specifications and tests
 
 - **Specifications:** Defined in [`execution-specs@projects/zkevm`](https://github.com/ethereum/execution-specs/tree/projects/zkevm), open upstream as [`execution-specs#2268`](https://github.com/ethereum/execution-specs/pull/2268) against `forks/amsterdam`.
   - Stateful execution layer (EL) specifications for guest program input generation.
@@ -68,17 +76,24 @@ EIP-8025 was [PFIed in ACD #178 (May 14, 2026)](https://www.youtube.com/watch?t=
 
 - **Documentation:** [Guest program handbook](https://github.com/eth-act/zkevm-standards/blob/main/handbooks/guest-handbook.md).
 
-## Consensus layer
+## Execution layer: clients
+
+## Consensus layer: specifications
 
 - **Specifications:** Merged in `consensus-specs` master, at [`ethereum/consensus-specs@master/specs/_features/eip8025`](https://github.com/ethereum/consensus-specs/tree/master/specs/_features/eip8025).
   - Proof-generating mode requests proofs and broadcasts them on the `execution_proof` gossip topic.
   - Proof-verifying mode consumes gossiped proofs and verifies them statelessly.
   - Includes the `ProofEngine` interface, proof gossip, request/response synchronization, and `eproof` Ethereum Node Record (ENR) discovery.
   - Open draft [`consensus-specs#5639`](https://github.com/ethereum/consensus-specs/pull/5639) would make the `ProofEngine` validation-only and remove the proof-generation interfaces, leaving proof production to middleware outside the specification (not merged as of 2026-09-27).
+
+## Consensus layer: clients
+
 - **Client implementations (Glamsterdam):** [`eth-act/lighthouse@optional-proofs-gloas`](https://github.com/eth-act/lighthouse/tree/optional-proofs-gloas) and [`OffchainLabs/prysm@eip8025-optional-proofs`](https://github.com/OffchainLabs/prysm/tree/eip8025-optional-proofs) (work-in-progress draft [`prysm#17490`](https://github.com/OffchainLabs/prysm/pull/17490)).
 - **Testing:**
   - Fulu: Kurtosis devnet with mocked and real proofs working, using the earlier Fulu-based `optional-proofs` branches of both clients.
   - Glamsterdam: in progress. Prysm on Gloas still runs with mocked proofs and a zkboost fork.
+
+## Guest programs
 
 ## zkVMs
 
@@ -99,7 +114,9 @@ EIP-8025 was [PFIed in ACD #178 (May 14, 2026)](https://www.youtube.com/watch?t=
   - Mocked and real proving support in the Kurtosis [`ethereum-package`](https://github.com/ethpandaops/ethereum-package).
   - Stateless-input artifacts allowing EIP-8025 proving on Glamsterdam devnets:
     - [R2 bucket for `glamsterdam-devnet-5` stateless inputs](https://pub-5345007fbd06486bbb7cbbe9f3112c45.r2.dev/devnets/glamsterdam-devnet-5/index.html)
-    - [R2 bucket for `glamsterdam-devnet-7` stateless inputs](https://pub-df22334654034ebab51bc096137a59d8.r2.dev/devnets/glamsterdam-devnet-7/index.html) 
+    - [R2 bucket for `glamsterdam-devnet-7` stateless inputs](https://pub-df22334654034ebab51bc096137a59d8.r2.dev/devnets/glamsterdam-devnet-7/index.html)
+
+## Benchmarks and repricing
 
 ## Coordination: zkEVM breakout calls
 
